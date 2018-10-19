@@ -1,0 +1,43 @@
+{
+    "version": "0.1.0",
+    "tasks": [
+        {
+            "taskName": "clang++",
+            "command": "clang++",
+            "args": ["-g", "${file}", "-o", "${fileDirname}\\${fileBasenameNoExtension}.exe", "-std=c++14", "--target=x86_64-w64-mingw64"],    // 编译命令参数
+            "showOutput": "always",
+            "isBuildCommand": true
+            // "problemMatcher": {
+                // "owner": "cpp",
+                // "fileLocation": ["relative", "${fileDirname}"]
+                // "pattern": {
+                //     "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                //     "file": 1,
+                //     "line": 2,
+                //     "column": 3,
+                //     "severity": 4,
+                //     "message": 5
+                // }
+            // }
+        },
+        {
+            "taskName": "g++",
+            "command": "g++",
+            "args": ["-g", "${file}", "-o", "${fileDirname}\\${fileBasenameNoExtension}.exe", "-std=c++14"],    // 编译命令参数
+            "showOutput": "always",
+            "isBuildCommand": true
+            // "problemMatcher": {
+            //     "owner": "cpp",
+            //     "fileLocation": ["relative", "${fileDirname}"]
+                // "pattern": {
+                //     "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                //     "file": 1,
+                //     "line": 2,
+                //     "column": 3,
+                //     "severity": 4,
+                //     "message": 5
+                // }
+            // }
+        }
+    ]
+}
