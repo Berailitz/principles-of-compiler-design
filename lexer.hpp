@@ -150,22 +150,7 @@ union TokenValueUnion
     string *string_value = nullptr; // union 内不可使用string
 };
 
-class Token
-{
-public:
-    Token(TokenType type, TokenValueUnion value);
-    Token(const Token &old_token);
-    Token(const Token *old_token = nullptr);
-    void set_value(TokenValueUnion value);
-    TokenValueUnion get_value() const;
-    TokenType get_type() const;
-    string dump() const;
-    Token& operator=(const Token &other);
-private:
-    TokenType _type = EmptyTokenType;
-    TokenValueUnion _value;
-    void initialize(const Token *old_token = nullptr);
-};
+using Token = pair<TokenType, TokenValueUnion>;
 
 class TextReader
 {
@@ -190,10 +175,14 @@ public:
 private:
     int row = 0;
     int column = 0;
+    TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
     queue<Token> &_token_queue;
+    char get_next_char(const int length = 1);
     int get_keyword_index(const string text);
     int get_identifier_index(const string text);
+    void send_token(const Token &token);
+    string dump_token(const Token &token) const;
 };
 
 class LexerComsumer
