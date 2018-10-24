@@ -258,7 +258,35 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们合并上述各词法可得
-   $$ languages \rightarrow  $$
+   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | : | ? | \sim | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / | UnaryOperators6 | ^ \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2 $$
+   $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
+   $$ hexs2 \rightarrow hex \ hexs3 $$
+   $$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
+   $$ decs1floats1 \rightarrow \varepsilon | dec \ decs1floats1 | E \ decs2 | e \ decs2 | . \ floats2 $$
+   $$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3  $$
+   $$ decs3 \rightarrow \varepsilon | dec \ decs3  $$
+   $$ floats2 \rightarrow dec \ floats3 $$
+   $$ floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4 $$
+   $$ floats4 \rightarrow dec \ floats5 $$
+   $$ floats5 \rightarrow \varepsilon | dec \ floats5 $$
+   $$ chars1 \rightarrow charNoSq \ chars2 $$
+   $$ chars2 \rightarrow '' $$
+   $$ string1 \rightarrow '' | charInString \ string2 $$
+$$ UnaryOperators1 \rightarrow \varepsilon | - | = $$
+   $$ UnaryOperators2 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators3 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators4 \rightarrow \varepsilon | \& | = $$
+   $$ UnaryOperators5 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators6 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators7 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators8 \rightarrow \varepsilon | \ | | \ = $$
+   $$ UnaryOperators9 \rightarrow \varepsilon | + | = $$
+   $$ UnaryOperators10 \rightarrow \varepsilon | = | < UnaryOperators13 $$
+   $$ UnaryOperators11 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators12 \rightarrow \varepsilon | = | > UnaryOperators14 $$
+   $$ UnaryOperators13 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators14 \rightarrow \varepsilon | = $$
 
 运行流程
 ====
