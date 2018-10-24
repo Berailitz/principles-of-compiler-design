@@ -3,10 +3,9 @@
 CompilationException::CompilationException(const int row, const int column, const string message)
     : row(row), column(column), message(message)
 {
-
 }
 
-const char* CompilationException::what() const noexcept
+const char *CompilationException::what() const noexcept
 {
     return (message + " (" + to_string(row) + ", " + to_string(column) + ")").c_str();
 }
@@ -46,7 +45,7 @@ void Lexer::prase(const string &filename)
         case LEX_DFA_languages:
             switch (next_char)
             {
-                case LEX_DFA_languages:
+            case LEX_DFA_languages:
                 if (next_char == '0')
                 {
                     set_state(LEX_DFA_octs1hexs1);
@@ -59,82 +58,86 @@ void Lexer::prase(const string &filename)
                 {
                     set_state(LEX_DFA_identifier1);
                 }
-                else {
+                else if (isblank(next_char))
+                {
+                }
+                else
+                {
                     switch (next_char)
                     {
                     case '\'':
                         set_state(LEX_DFA_chars1);
                         break;
-                        case '"':
+                    case '"':
                         set_state(LEX_DFA_string1);
                         break;
-                        case '-':
+                    case '-':
                         set_state(LEX_DFA_UnaryOperators1);
                         break;
-                        case '!':
+                    case '!':
                         set_state(LEX_DFA_UnaryOperators2);
                         break;
-                        case '%':
+                    case '%':
                         set_state(LEX_DFA_UnaryOperators3);
                         break;
-                        case '&':
+                    case '&':
                         set_state(LEX_DFA_UnaryOperators4);
                         break;
-                        case '*':
+                    case '*':
                         set_state(LEX_DFA_UnaryOperators5);
                         break;
-                        case '/':
+                    case '/':
                         set_state(LEX_DFA_UnaryOperators6comments1);
                         break;
-                        case '^':
+                    case '^':
                         set_state(LEX_DFA_UnaryOperators7);
                         break;
-                        case '|':
+                    case '|':
                         set_state(LEX_DFA_UnaryOperators8);
                         break;
-                        case '+':
+                    case '+':
                         set_state(LEX_DFA_UnaryOperators9);
                         break;
-                        case '<':
+                    case '<':
                         set_state(LEX_DFA_UnaryOperators10);
                         break;
-                        case '=':
+                    case '=':
                         set_state(LEX_DFA_UnaryOperators11);
                         break;
-                        case '>':
+                    case '>':
                         set_state(LEX_DFA_UnaryOperators12);
                         break;
-                        case ':':
-                        case '?':
-                        receive_token(TernaryOperatorTokenType);
+                    case ':':
+                    case '?':
+                        receive_token(TernaryOperatorTokenType, false);
                         break;
-                        case '~':
-                        receive_token(UnaryOperatorTokenType);
+                    case '~':
+                        receive_token(UnaryOperatorTokenType, false);
                         break;
-                        case '(':
-                        case ')':
-                        case '[':
-                        case ']':
-                        case '{':
-                        case '}':
-                        case ',':
-                        case ';':
-                        receive_token(DelimiterTokenType);
+                    case '(':
+                    case ')':
+                    case '[':
+                    case ']':
+                    case '{':
+                    case '}':
+                    case ',':
+                    case ';':
+                        receive_token(DelimiterTokenType, false);
                         break;
-                        default:
+                    default:
                         raise_error();
                         break;
                     }
                 }
             }
             break;
-            case LEX_DFA_identifier1:
+        case LEX_DFA_identifier1:
             if (!isalnum(next_char))
             {
-                receive_token(IdentifierTokenType);
+                receive_token(IdentifierTokenType, true);
             }
             break;
-            case LEX_DFA_octs1hexs1:
+        case LEX_DFA_octs1hexs1:
             if (is_oct(next_char))
             {
                 set_state(LEX_DFA_octs2);
@@ -143,283 +146,290 @@ void Lexer::prase(const string &filename)
             {
                 set_state(LEX_DFA_hexs2);
             }
-            else {
+            else
+            {
                 raise_error();
             }
             break;
-            case LEX_DFA_octs2:
+        case LEX_DFA_octs2:
             if (!is_oct(next_char))
             {
-                receive_token(IntTokenType);
+                receive_token(IntTokenType, true);
             }
             break;
-            case LEX_DFA_hexs2:
+        case LEX_DFA_hexs2:
             if (isxdigit(next_char))
             {
                 set_state(LEX_DFA_hexs3);
             }
-            else {
+            else
+            {
                 raise_error();
             }
             break;
-            case LEX_DFA_hexs3:
+        case LEX_DFA_hexs3:
             if (!isxdigit(next_char))
             {
-                receive_token(IntTokenType);
+                receive_token(IntTokenType, true);
             }
             break;
-            case LEX_DFA_decs1floats1:
+        case LEX_DFA_decs1floats1:
             if (isdigit(next_char))
             {
-                
             }
-            else {
+            else
+            {
                 switch (next_char)
                 {
-                    case 'e':
-                    case 'E':
+                case 'e':
+                case 'E':
                     set_state(LEX_DFA_decs2);
                     break;
-                    case '.':
+                case '.':
                     set_state(LEX_DFA_floats2);
                     break;
-                    default:
-                    receive_token(IntTokenType);
+                default:
+                    receive_token(IntTokenType, true);
                     break;
                 }
             }
             break;
-            case LEX_DFA_decs2:
+        case LEX_DFA_decs2:
             if (isdigit(next_char))
             {
                 set_state(LEX_DFA_decs3);
             }
-            else {
+            else
+            {
                 switch (next_char)
                 {
-                    case '+':
-                    case '-':
+                case '+':
+                case '-':
                     set_state(LEX_DFA_decs3);
                     break;
-                    default:
+                default:
                     raise_error();
                     break;
                 }
             }
             break;
-            case LEX_DFA_decs3:
+        case LEX_DFA_decs3:
             if (!isdigit(next_char))
             {
-                receive_token(IntTokenType);
+                receive_token(IntTokenType, true);
             }
             break;
-            case LEX_DFA_floats2:
+        case LEX_DFA_floats2:
             if (isdigit(next_char))
             {
                 set_state(LEX_DFA_floats3);
             }
-            else {
+            else
+            {
                 raise_error();
             }
             break;
-            case LEX_DFA_floats3:
+        case LEX_DFA_floats3:
             if (!isdigit(next_char))
             {
                 switch (next_char)
                 {
-                    case  'E':
-                    case  'e':
+                case 'E':
+                case 'e':
                     set_state(LEX_DFA_floats4);
                     break;
-                    default:
-                    receive_token(FloatTokenType);
+                default:
+                    receive_token(FloatTokenType, true);
                 }
             }
             break;
-            case LEX_DFA_floats4:
+        case LEX_DFA_floats4:
             if (isdigit(next_char))
             {
                 set_state(LEX_DFA_floats5);
             }
-            else {
-                raise_error();;
+            else
+            {
+                raise_error();
             }
             break;
-            case LEX_DFA_floats5:
+        case LEX_DFA_floats5:
             if (!isdigit(next_char))
             {
-                receive_token(FloatTokenType);
+                receive_token(FloatTokenType, true);
             }
             break;
-            case LEX_DFA_chars1:
+        case LEX_DFA_chars1:
             if (next_char == '\'')
             {
                 raise_error();
             }
-            else {
+            else
+            {
                 set_state(LEX_DFA_chars2);
             }
             break;
-            case LEX_DFA_chars2:
+        case LEX_DFA_chars2:
             if (next_char == '\'')
             {
-                receive_token(CharTokenType);
+                receive_token(CharTokenType, false);
             }
-            else {
+            else
+            {
                 raise_error();
             }
             break;
-            case LEX_DFA_string1:
+        case LEX_DFA_string1:
             if (next_char == '"')
             {
-                receive_token(StringTokenType);
+                receive_token(StringTokenType, false);
             }
             break;
-            case LEX_DFA_UnaryOperators6comments1:
+        case LEX_DFA_UnaryOperators6comments1:
             switch (next_char)
             {
-                case '=':
-                receive_token(BinaryOperatorTokenType);
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                case '/':
+            case '/':
                 set_state(LEX_DFA_commentInLine2);
                 break;
-                case '*':
+            case '*':
                 set_state(LEX_DFA_commentCrossLine2);
                 break;
-                default:
-                retract();
+            default:
+                receive_token(BinaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_commentInLine2:
+        case LEX_DFA_commentInLine2:
             if (next_char == LINE_DELIMITER)
             {
-                set_state(LEX_DFA_languages);
-                // 表述注释结束
+                receive_token(EmptyTokenType, false);
+                // 表示行内注释结束
             }
             break;
-            case LEX_DFA_commentCrossLine2:
+        case LEX_DFA_commentCrossLine2:
             if (next_char == '*')
             {
                 set_state(LEX_DFA_commentCrossLine3);
             }
             break;
-            case LEX_DFA_commentCrossLine3:
+        case LEX_DFA_commentCrossLine3:
             if (next_char == '/')
+            {
+                receive_token(EmptyTokenType, false);
+                // 表示跨行注释结束
+            }
+            else
             {
                 set_state(LEX_DFA_commentCrossLine2);
             }
             break;
-            case LEX_DFA_UnaryOperators1:
+        case LEX_DFA_UnaryOperators1:
             switch (next_char)
             {
-                case '-':
-                receive_token(BinaryOperatorTokenType);
+            case '-':
+                receive_token(UnaryOperatorTokenType, false);
                 break;
-                default:
-                receive_token(BinaryOperatorTokenType);
-                retract();
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
+                break;
+            default:
+                receive_token(BinaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_UnaryOperators2:
-            case LEX_DFA_UnaryOperators3:
-            case LEX_DFA_UnaryOperators5:
-            case LEX_DFA_UnaryOperators7:
-            case LEX_DFA_UnaryOperators11:
+        case LEX_DFA_UnaryOperators2:
+        case LEX_DFA_UnaryOperators7:
             switch (next_char)
             {
-                case '=':
-                receive_token(BinaryOperatorTokenType);
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                default:
-                receive_token(UnaryOperatorTokenType);
-                retract();
+            default:
+                receive_token(UnaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_UnaryOperators4:
+        case LEX_DFA_UnaryOperators3:
+        case LEX_DFA_UnaryOperators5:
+        case LEX_DFA_UnaryOperators11:
+        case LEX_DFA_UnaryOperators13:
+        case LEX_DFA_UnaryOperators14:
             switch (next_char)
             {
-                case '&':
-                case '=':
-                receive_token(BinaryOperatorTokenType);
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                default:
-                receive_token(UnaryOperatorTokenType);
-                retract();
+            default:
+                receive_token(BinaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_UnaryOperators8:
+        case LEX_DFA_UnaryOperators4:
             switch (next_char)
             {
-                case '|':
-                case '=':
-                receive_token(BinaryOperatorTokenType);
+            case '&':
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                default:
-                receive_token(UnaryOperatorTokenType);
-                retract();
+            default:
+                receive_token(UnaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_UnaryOperators9:
+        case LEX_DFA_UnaryOperators8:
             switch (next_char)
             {
-                case '+':
-                receive_token(UnaryOperatorTokenType);
+            case '|':
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                case '=':
-                receive_token(BinaryOperatorTokenType);
-                break;
-                default:
-                receive_token(BinaryOperatorTokenType);
-                retract();
+            default:
+                receive_token(UnaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_UnaryOperators10:
+        case LEX_DFA_UnaryOperators9:
             switch (next_char)
             {
-                case '<':
+            case '+':
+                receive_token(UnaryOperatorTokenType, false);
+                break;
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
+                break;
+            default:
+                receive_token(BinaryOperatorTokenType, true);
+                break;
+            }
+            break;
+        case LEX_DFA_UnaryOperators10:
+            switch (next_char)
+            {
+            case '<':
                 set_state(LEX_DFA_UnaryOperators13);
                 break;
-                case '=':
-                receive_token(BinaryOperatorTokenType);
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                default:
-                receive_token(BinaryOperatorTokenType);
-                retract();
+            default:
+                receive_token(BinaryOperatorTokenType, true);
                 break;
             }
             break;
-            case LEX_DFA_UnaryOperators12:
+        case LEX_DFA_UnaryOperators12:
             switch (next_char)
             {
-                case '>':
+            case '>':
                 set_state(LEX_DFA_UnaryOperators14);
                 break;
-                case '=':
-                receive_token(BinaryOperatorTokenType);
+            case '=':
+                receive_token(BinaryOperatorTokenType, false);
                 break;
-                default:
-                receive_token(BinaryOperatorTokenType);
-                retract();
-                break;
-            }
-            break;
-            case LEX_DFA_UnaryOperators13:
-            case LEX_DFA_UnaryOperators14:
-            switch (next_char)
-            {
-                case '=':
-                receive_token(BinaryOperatorTokenType);
-                break;
-                default:
-                receive_token(BinaryOperatorTokenType);
-                retract();
+            default:
+                receive_token(BinaryOperatorTokenType, true);
                 break;
             }
             break;
@@ -427,24 +437,17 @@ void Lexer::prase(const string &filename)
     }
 }
 
-void Lexer::retract()
-{
-    // 初始化状态机并回退一格之上一个非空（可以是换行符的）字符
-    set_state(LEX_DFA_languages);
-    reader->retract();
-}
-
-void Lexer::receive_token(const TokenType &type)
+void Lexer::receive_token(const TokenType &type, const bool do_retract)
 {
     // 初始化状态机并送出符号
     string text = reader->get_current_string();
     Token token({type, nullptr});
     switch (type)
     {
-        case EmptyTokenType:
+    case EmptyTokenType:
         cout << "EmptyTokenType";
         break;
-        case IdentifierTokenType:
+    case IdentifierTokenType:
         token.second.int_value = get_keyword_index(text);
         if (token.second.int_value == -1)
         {
@@ -452,29 +455,33 @@ void Lexer::receive_token(const TokenType &type)
             token.first = IdentifierTokenType;
         }
         break;
-        case IntTokenType:
+    case IntTokenType:
         token.second.int_value = atoi(text.c_str());
         break;
-        case FloatTokenType:
+    case FloatTokenType:
         token.second.float_value = atof(text.c_str());
         break;
-        case CharTokenType:
+    case CharTokenType:
         token.second.char_value = text[1];
         break;
-        case StringTokenType:
+    case StringTokenType:
         token.second.string_value = new string(text);
         break;
-        case UnaryOperatorTokenType:
-        case BinaryOperatorTokenType:
-        case TernaryOperatorTokenType:
+    case UnaryOperatorTokenType:
+    case BinaryOperatorTokenType:
+    case TernaryOperatorTokenType:
         token.second.int_value = get_operator_index(text);
         break;
-        case DelimiterTokenType:
+    case DelimiterTokenType:
         token.second.int_value = get_delimiter_index(text);
         break;
     }
     _token_queue.push(token);
     set_state(LEX_DFA_languages);
+    if (do_retract)
+    {
+        reader->retract();
+    }
     reader->reset_current_string();
 }
 
@@ -490,9 +497,8 @@ int Lexer::get_keyword_index(const string text)
     {
         index = KEYWORD_TABLE->at(text);
     }
-    catch(const std::out_of_range& e)
+    catch (const std::out_of_range &e)
     {
-
     }
     return index;
 }
@@ -517,26 +523,26 @@ string Lexer::dump_token(const Token &token) const
     string text = TOKEN_NAMES[token.first];
     switch (token.first)
     {
-        case EmptyTokenType:
-            break;
-        case IdentifierTokenType:
-        case KeywordTokenType:
-        case IntTokenType:
-        case UnaryOperatorTokenType:
-        case BinaryOperatorTokenType:
-        case TernaryOperatorTokenType:
-        case DelimiterTokenType:
-            text += to_string(token.second.int_value);
-            break;
-        case FloatTokenType:
-            text += to_string(token.second.float_value);
-            break;
-        case CharTokenType:
-            text += to_string(token.second.char_value);
-            break;
-        case StringTokenType:
-            text += *(token.second.string_value);
-            break;
+    case EmptyTokenType:
+        break;
+    case IdentifierTokenType:
+    case KeywordTokenType:
+    case IntTokenType:
+    case UnaryOperatorTokenType:
+    case BinaryOperatorTokenType:
+    case TernaryOperatorTokenType:
+    case DelimiterTokenType:
+        text += to_string(token.second.int_value);
+        break;
+    case FloatTokenType:
+        text += to_string(token.second.float_value);
+        break;
+    case CharTokenType:
+        text += to_string(token.second.char_value);
+        break;
+    case StringTokenType:
+        text += *(token.second.string_value);
+        break;
     }
     return text;
 }
@@ -544,12 +550,12 @@ string Lexer::dump_token(const Token &token) const
 LexerComsumer::LexerComsumer(queue<Token> &token_queue)
     : _token_queue(token_queue)
 {
-
 }
 
 void LexerComsumer::run()
 {
-    while(/* condition */){
+    while (/* condition */)
+    {
         /* code */
     }
 }

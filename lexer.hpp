@@ -269,14 +269,13 @@ private:
     unordered_map<string, int> *identifier_table;
     queue<Token> &_token_queue;
     void set_state(const int next_state);
-    void retract();
     void raise_error();
     int get_state();
     int get_keyword_index(const string text);
     int get_identifier_index(const string text);
     int get_operator_index(const string text);
     int get_delimiter_index(const string text);
-    void receive_token(const TokenType &type); // 将IdentifierTokenType视为关键字或标识符
+    void receive_token(const TokenType &type, const bool do_retract); // 将IdentifierTokenType视为关键字或标识符
     string dump_token(const Token &token) const;
     bool is_oct(const char next_char) const;
 };
