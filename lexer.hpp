@@ -1,3 +1,4 @@
+#include <cctype>
 #include <cmath>
 #include <exception>
 #include <fstream>
@@ -11,6 +12,7 @@ using namespace std;
 const int MAX_IDENTIFIER_LENGTH = 1000;
 const int MAX_TOKEN_QUEUE_SIZE = 10;
 const char LINE_DELIMITER = '\n';
+const char END_OF_FILE = '\0';
 const string DEFAULT_ERROR_MESSAGE = "Error occored.";
 const unordered_map<string, int> *KEYWORD_TABLE = new unordered_map<string, int>(
     {{"alignas", 0},
@@ -146,6 +148,40 @@ const unordered_map<string, int> *DELIMITER_TABLE = new unordered_map<string, in
      {"}", 5},
      {",", 6},
      {";", 7}});
+const int LEX_DFA_error = -1;
+const int LEX_DFA_languages = 1;
+const int LEX_DFA_identifier1 = 2;
+const int LEX_DFA_octs1hexs1 = 3;
+const int LEX_DFA_octs2 = 4;
+const int LEX_DFA_hexs2 = 5;
+const int LEX_DFA_hexs3 = 6;
+const int LEX_DFA_decs1floats1 = 7;
+const int LEX_DFA_decs2 = 8;
+const int LEX_DFA_decs3 = 9;
+const int LEX_DFA_floats2 = 10;
+const int LEX_DFA_floats3 = 11;
+const int LEX_DFA_floats4 = 12;
+const int LEX_DFA_floats5 = 13;
+const int LEX_DFA_chars1 = 14;
+const int LEX_DFA_chars2 = 15;
+const int LEX_DFA_string1 = 16;
+const int LEX_DFA_UnaryOperators6comments1 = 17;
+const int LEX_DFA_commentInLine2 = 18;
+const int LEX_DFA_commentCrossLine2 = 19;
+const int LEX_DFA_commentCrossLine3 = 20;
+const int LEX_DFA_UnaryOperators1 = 21;
+const int LEX_DFA_UnaryOperators2 = 22;
+const int LEX_DFA_UnaryOperators3 = 23;
+const int LEX_DFA_UnaryOperators4 = 24;
+const int LEX_DFA_UnaryOperators5 = 25;
+const int LEX_DFA_UnaryOperators7 = 26;
+const int LEX_DFA_UnaryOperators8 = 27;
+const int LEX_DFA_UnaryOperators9 = 28;
+const int LEX_DFA_UnaryOperators10 = 29;
+const int LEX_DFA_UnaryOperators11 = 30;
+const int LEX_DFA_UnaryOperators12 = 31;
+const int LEX_DFA_UnaryOperators13 = 32;
+const int LEX_DFA_UnaryOperators14 = 33;
 
 class CompilationException : public exception
 {
@@ -192,9 +228,13 @@ const string TOKEN_NAMES[] = {
 union TokenValueUnion
 {
     int int_value;
-    float float_value;
+    double float_value;
     char char_value;
     string *string_value = nullptr; // union 内不可使用string
+    TokenValueUnion(int int_value);
+    TokenValueUnion(double float_value);
+    TokenValueUnion(char char_value);
+    TokenValueUnion(string *string_value);
 };
 
 using Token = pair<TokenType, TokenValueUnion>;
@@ -204,12 +244,14 @@ class TextReader
 public:
     TextReader(const string &filename);
     ~TextReader();
-    char get_next_char(const int length = 1);
-    void retract(const int length = 1);
+    int start_index = 0;
+    int end_index = 1;
+    char get_next_char();
+    void reset_current_string();
+    string get_current_string() const;
+    void retract();
 private:
     string *_buffer = nullptr;
-    string::iterator _start;
-    string::iterator _end;
     ifstream source;
 };
 
@@ -222,14 +264,21 @@ public:
 private:
     int row = 0;
     int column = 0;
+    int _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
     queue<Token> &_token_queue;
-    char get_next_char(const int length = 1);
+    void set_state(const int next_state);
+    void retract();
+    void raise_error();
+    int get_state();
     int get_keyword_index(const string text);
     int get_identifier_index(const string text);
-    void send_token(const Token &token);
+    int get_operator_index(const string text);
+    int get_delimiter_index(const string text);
+    void receive_token(const TokenType &type); // 将IdentifierTokenType视为关键字或标识符
     string dump_token(const Token &token) const;
+    bool is_oct(const char next_char) const;
 };
 
 class LexerComsumer

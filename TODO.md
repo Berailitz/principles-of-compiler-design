@@ -194,7 +194,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    其文法为
    $$ chars \rightarrow ' \ chars1 $$
    $$ chars1 \rightarrow charNoSq \ chars2 $$
-   $$ chars2 \rightarrow '' $$
+   $$ chars2 \rightarrow ' $$
 
 字符串
 ---
@@ -203,13 +203,13 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ '' \ {charInString}^* \ '' $$
    其文法为
    $$ strings \rightarrow '' \ string1 $$
-   $$ string1 \rightarrow '' | charInString \ string2 $$
+   $$ string1 \rightarrow '' | charInString \ string1 $$
 
 运算符
 ---
 
 1. 我们借用语法分析中的首符号集的概念，对各个运算符进行分析，得到如下文法
-   $$ UnaryOperators \rightarrow : | ? | \sim | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / | UnaryOperators6 | ^ \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 $$
+   $$ UnaryOperators \rightarrow : | ? | \sim | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / | UnaryOperators6 | \wedge \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 $$
    $$ UnaryOperators1 \rightarrow \varepsilon | - | = $$
    $$ UnaryOperators2 \rightarrow \varepsilon | = $$
    $$ UnaryOperators3 \rightarrow \varepsilon | = $$
@@ -258,7 +258,8 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们合并上述各词法可得
-   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | : | ? | \sim | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / | UnaryOperators6 | ^ \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / \ UnaryOperators6comments1 | \wedge \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 | letter \ identifier1 | : | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1 $$
    $$ octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
    $$ hexs2 \rightarrow hex \ hexs3 $$
@@ -272,13 +273,16 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ floats5 \rightarrow \varepsilon | dec \ floats5 $$
    $$ chars1 \rightarrow charNoSq \ chars2 $$
    $$ chars2 \rightarrow '' $$
-   $$ string1 \rightarrow '' | charInString \ string2 $$
-$$ UnaryOperators1 \rightarrow \varepsilon | - | = $$
+   $$ string1 \rightarrow '' | charInString \ string1 $$
+   $$ UnaryOperators6comments1 \rightarrow \varepsilon | = | / \ commentInLine2 |* \ commentCrossLine2  $$
+   $$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
+   $$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
+   $$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
+   $$ UnaryOperators1 \rightarrow \varepsilon | - | = $$
    $$ UnaryOperators2 \rightarrow \varepsilon | = $$
    $$ UnaryOperators3 \rightarrow \varepsilon | = $$
    $$ UnaryOperators4 \rightarrow \varepsilon | \& | = $$
    $$ UnaryOperators5 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators6 \rightarrow \varepsilon | = $$
    $$ UnaryOperators7 \rightarrow \varepsilon | = $$
    $$ UnaryOperators8 \rightarrow \varepsilon | \ | | \ = $$
    $$ UnaryOperators9 \rightarrow \varepsilon | + | = $$

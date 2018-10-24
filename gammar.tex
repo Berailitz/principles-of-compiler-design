@@ -1,0 +1,124 @@
+\documentclass{article}
+    \usepackage{amsmath}
+    \usepackage{amssymb}
+    \usepackage{breqn}
+    \usepackage{geometry}
+
+    \geometry{a4paper,scale=0.8}
+\begin{document}
+\begin{equation}
+	\begin{aligned}
+		languages & \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1               \\
+		          & | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3                         \\
+		          & | \& \ UnaryOperators4 | * \ UnaryOperators5                                               \\
+		          & | / \ UnaryOperators6comments1 | \wedge \ UnaryOperators7                                  \\
+		          & | \ | \ UnaryOperators8 | + \ UnaryOperators9                                              \\
+		          & | < \ UnaryOperators10 | = \ UnaryOperators11                                              \\
+		          & | > \ UnaryOperators12 | letter \ identifier1                                              \\
+		          & | : | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ;
+	\end{aligned}
+\end{equation}
+\begin{equation}
+	identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1
+\end{equation}
+\begin{equation}
+	octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2
+\end{equation}
+\begin{equation}
+	octs2 \rightarrow \varepsilon | oct \ octs2
+\end{equation}
+\begin{equation}
+	hexs2 \rightarrow hex \ hexs3
+\end{equation}
+\begin{equation}
+	hexs3 \rightarrow \varepsilon | hex \ hexs3
+\end{equation}
+\begin{equation}
+	decs1floats1 \rightarrow \varepsilon | dec \ decs1floats1 | E \ decs2 | e \ decs2 | . \ floats2
+\end{equation}
+\begin{equation}
+	decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3
+\end{equation}
+\begin{equation}
+	decs3 \rightarrow \varepsilon | dec \ decs3
+\end{equation}
+\begin{equation}
+	floats2 \rightarrow dec \ floats3
+\end{equation}
+\begin{equation}
+	floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4
+\end{equation}
+\begin{equation}
+	floats4 \rightarrow dec \ floats5
+\end{equation}
+\begin{equation}
+	floats5 \rightarrow \varepsilon | dec \ floats5
+\end{equation}
+\begin{equation}
+	chars1 \rightarrow charNoSq \ chars2
+\end{equation}
+\begin{equation}
+	chars2 \rightarrow '
+\end{equation}
+\begin{equation}
+	string1 \rightarrow '' | charInString \ string1
+\end{equation}
+\begin{equation}
+	\begin{aligned}
+		UnaryOperators6comments1 \rightarrow \varepsilon | = & | / \ commentInLine2   \\
+		                                                     & |* \ commentCrossLine2
+	\end{aligned}
+\end{equation}
+\begin{equation}
+	commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2
+\end{equation}
+\begin{equation}
+	\begin{aligned}
+		commentCrossLine2 \rightarrow & * \ commentCrossLine3            \\
+		                              & | charNoStar \ commentCrossLine2
+	\end{aligned}
+\end{equation}
+\begin{equation}
+	commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2
+\end{equation}
+\begin{equation}
+	UnaryOperators1 \rightarrow \varepsilon | - | =
+\end{equation}
+\begin{equation}
+	UnaryOperators2 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	UnaryOperators3 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	UnaryOperators4 \rightarrow \varepsilon | \& | =
+\end{equation}
+\begin{equation}
+	UnaryOperators5 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	UnaryOperators7 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	UnaryOperators8 \rightarrow \varepsilon | \ | | \ =
+\end{equation}
+\begin{equation}
+	UnaryOperators9 \rightarrow \varepsilon | + | =
+\end{equation}
+\begin{equation}
+	UnaryOperators10 \rightarrow \varepsilon | = | < UnaryOperators13
+\end{equation}
+\begin{equation}
+	UnaryOperators11 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	UnaryOperators12 \rightarrow \varepsilon | = | > UnaryOperators14
+\end{equation}
+\begin{equation}
+	UnaryOperators13 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	UnaryOperators14 \rightarrow \varepsilon | =
+\end{equation}
+
+\end{document}
