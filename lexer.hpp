@@ -9,7 +9,8 @@
 
 using namespace std;
 
-const int MAX_IDENTIFIER_LENGTH = 1000;
+const int LEXER_MID_BUFFER_SIZE = 10;
+const int LEXER_BUFFER_SIZE = LEXER_MID_BUFFER_SIZE * 2;
 const int MAX_TOKEN_QUEUE_SIZE = 10;
 const char LINE_DELIMITER = '\n';
 const char END_OF_FILE = '\0';
@@ -187,21 +188,6 @@ enum LEX_DFA_STATE
     LEX_DFA_Operators15
 };
 
-class CompilationException : public exception
-{
-public:
-    CompilationException(const int row, const int column, const string message);
-    const int row = -1;
-    const int column = -1;
-    const string message = DEFAULT_ERROR_MESSAGE;
-    const char* what() const noexcept;
-};
-
-class LexicalException : public exception
-{
-
-};
-
 enum TokenType
 {
     EmptyTokenType,
@@ -251,13 +237,13 @@ public:
     TextReader(const string &filename);
     ~TextReader();
     int start_index = 0;
-    int end_index = 1;
+    int end_index = 0;
     bool is_in_retraction = false;
     char get_next_char();
     void reset_current_string();
     string get_current_string() const;
 private:
-    string *_buffer = nullptr;
+    char *_buffer = new char[LEXER_BUFFER_SIZE];
     ifstream source;
 };
 
@@ -274,17 +260,18 @@ private:
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
     queue<Token> &_token_queue;
-    void set_state(const int next_state);
+    void set_state(const LEX_DFA_STATE next_state);
     void raise_error();
-    int get_state();
+    LEX_DFA_STATE get_state();
     int get_keyword_index(const string text);
     int get_identifier_index(const string text);
     int get_operator_index(const string text);
     int get_delimiter_index(const string text);
     void receive_token(const TokenType &type, const bool do_retract); // 将IdentifierTokenType视为关键字或标识符
-    string dump_token(const Token &token) const;
     bool is_oct(const char next_char) const;
 };
+
+string dump_token(const Token &token);
 
 class LexerComsumer
 {
@@ -292,5 +279,5 @@ public:
     LexerComsumer(queue<Token> &token_queue);
     void run();
 private:
-    const queue<Token> &_token_queue;
+    queue<Token> &_token_queue;
 };
