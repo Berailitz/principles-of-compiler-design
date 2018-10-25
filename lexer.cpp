@@ -447,7 +447,7 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
 {
     // 初始化状态机并送出符号
     string text = reader->get_current_string();
-    Token token({type, nullptr});
+    Token token(type, 1);
     switch (type)
     {
     case EmptyTokenType:
@@ -471,7 +471,7 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         token.second.char_value = text[1];
         break;
     case StringTokenType:
-        token.second.string_value = new string(text);
+        token.second.string_value = text;
         break;
     case UnaryOperatorTokenType:
     case BinaryOperatorTokenType:
@@ -547,7 +547,7 @@ string Lexer::dump_token(const Token &token) const
         text += to_string(token.second.char_value);
         break;
     case StringTokenType:
-        text += *(token.second.string_value);
+        text += token.second.string_value;
         break;
     }
     return text;

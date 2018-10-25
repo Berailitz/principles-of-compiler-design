@@ -229,16 +229,18 @@ const string TOKEN_NAMES[] = {
     "TernaryOperatorToken",
     "DelimiterToken"};
 
-union TokenValueUnion
+class TokenValueUnion
 {
+public:
     int int_value;
     double float_value;
     char char_value;
-    string *string_value = nullptr; // union 内不可使用string
+    string string_value;
+    TokenValueUnion();
     TokenValueUnion(int int_value);
     TokenValueUnion(double float_value);
     TokenValueUnion(char char_value);
-    TokenValueUnion(string *string_value);
+    TokenValueUnion(string &string_value);
 };
 
 using Token = pair<TokenType, TokenValueUnion>;
