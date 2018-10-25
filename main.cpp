@@ -6,6 +6,7 @@ int main()
     Lexer lexer(token_queue);
     LexerComsumer comsumer(token_queue);
     lexer.prase("test.cpp");
+    cout << endl << "Tokens:" << endl;
     comsumer.run();
     cin.get();
 }

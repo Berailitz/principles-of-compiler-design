@@ -22,12 +22,18 @@ TokenValueUnion::TokenValueUnion(string &string_value) : string_value(string_val
 
 TextReader::TextReader(const string &filename) : source(filename)
 {
-    source.read(_buffer, LEXER_BUFFER_SIZE);
+    read_file(0);
 }
 
 TextReader::~TextReader()
 {
     delete[] _buffer;
+}
+
+void TextReader::read_file(const int start_position)
+{
+    fill_n(_buffer + start_position, LEXER_MID_BUFFER_SIZE, END_OF_FILE);
+    source.read(_buffer + start_position, LEXER_MID_BUFFER_SIZE);
 }
 
 char TextReader::get_next_char()
@@ -37,12 +43,12 @@ char TextReader::get_next_char()
     {
         if (end_index == LEXER_MID_BUFFER_SIZE)
         {
-            source.read(_buffer + LEXER_MID_BUFFER_SIZE, LEXER_MID_BUFFER_SIZE);
+            read_file(LEXER_MID_BUFFER_SIZE);
             end_index++;
         }
         else if (end_index == LEXER_BUFFER_SIZE)
         {
-            source.read(_buffer, LEXER_MID_BUFFER_SIZE);
+            read_file(0);
             end_index = 0;
         }
         else
@@ -77,10 +83,10 @@ void TextReader::reset_current_string()
     {
         if (is_in_retraction)
         {
-            start_index = end_index;
+            start_index = end_index - 1;
         }
         else {
-            start_index = end_index - 1;
+            start_index = end_index;
         }
     }
 }
@@ -103,10 +109,10 @@ string TextReader::get_current_string() const
         current_string.append(_buffer + start_index, LEXER_BUFFER_SIZE - start_index);
         if (is_in_retraction)
         {
-            current_string.append(_buffer, end_index);
+            current_string.append(_buffer, end_index - 1);
         }
         else {
-            current_string.append(_buffer, end_index + 1);
+            current_string.append(_buffer, end_index);
         }
     }
     return current_string;
@@ -157,9 +163,6 @@ void Lexer::prase(const string &filename)
             else if (isalpha(next_char))
             {
                 set_state(LEX_DFA_identifier1);
-            }
-            else if (isblank(next_char))
-            {
             }
             else
             {
@@ -213,6 +216,9 @@ void Lexer::prase(const string &filename)
                 case '?':
                     receive_token(TernaryOperatorTokenType, false);
                     break;
+                case '.':
+                    receive_token(BinaryOperatorTokenType, false);
+                    break;
                 case '~':
                     receive_token(UnaryOperatorTokenType, false);
                     break;
@@ -227,7 +233,7 @@ void Lexer::prase(const string &filename)
                     receive_token(DelimiterTokenType, false);
                     break;
                 default:
-                reader->reset_current_string();
+                    reader->reset_current_string();
                     break;
                 }
             }
@@ -562,15 +568,15 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         reader->is_in_retraction = true;
     }
     text = reader->get_current_string();
+    token.second.string_value = text;
     switch (type)
     {
     case EmptyTokenType:
-        cout << "EmptyTokenType";
+    case StringTokenType:
         break;
     case KeywordTokenType:
     case IdentifierTokenType:
         token.first = KeywordTokenType;
-        token.second.string_value = text;
         token.second.int_value = get_keyword_index(text);
         if (token.second.int_value == -1)
         {
@@ -586,9 +592,6 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         break;
     case CharTokenType:
         token.second.char_value = text[1];
-        break;
-    case StringTokenType:
-        token.second.string_value = text;
         break;
     case UnaryOperatorTokenType:
     case BinaryOperatorTokenType:
@@ -626,8 +629,18 @@ int Lexer::get_keyword_index(const string text)
 
 int Lexer::get_identifier_index(const string text)
 {
+    int index = -1;
     cout << "`" << text << "`" << endl;
-    return (*identifier_table)[text];
+    try
+    {
+        index = identifier_table->at(text);
+    }
+    catch (const std::out_of_range &e)
+    {
+        index = identifier_table->size();
+        identifier_table->insert({text, index});
+    }
+    return index;
 }
 
 int Lexer::get_operator_index(const string text)
@@ -649,32 +662,31 @@ bool Lexer::is_oct(const char next_char) const
 
 string dump_token(const Token &token)
 {
-    string text = "<" + TOKEN_NAMES[token.first] + ", ";
+    string text = "<" + TOKEN_NAMES[token.first];
     switch (token.first)
     {
     case EmptyTokenType:
-        break;
     case IdentifierTokenType:
     case KeywordTokenType:
-        text += (to_string(token.second.int_value) + ", " + token.second.string_value);
+        text += (", " + to_string(token.second.int_value));
         break;
     case IntTokenType:
     case UnaryOperatorTokenType:
     case BinaryOperatorTokenType:
     case TernaryOperatorTokenType:
     case DelimiterTokenType:
-        text += to_string(token.second.int_value);
+        text += (", " + to_string(token.second.int_value));
         break;
     case FloatTokenType:
-        text += to_string(token.second.float_value);
+        text += (", " + to_string(token.second.float_value));
         break;
     case CharTokenType:
-        text += to_string(token.second.char_value);
+        text += (", " + to_string(token.second.char_value));
         break;
     case StringTokenType:
-        text += token.second.string_value;
         break;
     }
+    text += (", `" + token.second.string_value + "`");
     return text + ">" + LINE_DELIMITER;
 }
 

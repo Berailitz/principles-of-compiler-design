@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <exception>
@@ -114,32 +115,34 @@ const unordered_map<string, int> *OPERATOR_TABLE = new unordered_map<string, int
     {"-", 8},
     {"*", 9},
     {"/", 10},
-    {"%", 11},
-    {"=", 12},
-    {"<", 13},
-    {">", 14},
-    {"+=", 15},
-    {"-=", 16},
-    {"*=", 17},
-    {"/=", 18},
-    {"%=", 19},
-    {"^=", 20},
-    {"&=", 21},
-    {"|=", 22},
-    {">>=", 23},
-    {"<<=", 24},
-    {"==", 25},
-    {"!=", 26},
-    {"<=", 27},
-    {">=", 28},
-    {"&&", 29},
-    {"||", 30},
-    {"++", 31},
-    {"--", 32},
-    {"->*", 33},
-    {"->", 34},
-    {"?", 35},
-    {":", 36}});
+    {".", 11},
+    {"::", 12},
+    {"%", 13},
+    {"=", 14},
+    {"<", 15},
+    {">", 16},
+    {"+=", 17},
+    {"-=", 18},
+    {"*=", 19},
+    {"/=", 20},
+    {"%=", 21},
+    {"^=", 22},
+    {"&=", 23},
+    {"|=", 24},
+    {">>=", 25},
+    {"<<=", 26},
+    {"==", 27},
+    {"!=", 28},
+    {"<=", 29},
+    {">=", 30},
+    {"&&", 31},
+    {"||", 32},
+    {"++", 33},
+    {"--", 34},
+    {"->*", 35},
+    {"->", 36},
+    {"?", 37},
+    {":", 38}});
 const unordered_map<string, int> *DELIMITER_TABLE = new unordered_map<string, int>(
     {{"(", 0},
      {")", 1},
@@ -243,6 +246,7 @@ public:
     void reset_current_string();
     string get_current_string() const;
 private:
+    void read_file(const int start_position);
     char *_buffer = new char[LEXER_BUFFER_SIZE];
     ifstream source;
 };

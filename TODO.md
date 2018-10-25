@@ -209,7 +209,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们借用语法分析中的首符号集的概念，对各个运算符进行分析，得到如下文法
-   $$ UnaryOperators \rightarrow ? | \sim | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / | Operators6 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 $$
+   $$ UnaryOperators \rightarrow . | ? | \sim | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / | Operators6 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 $$
    $$ Operators1 \rightarrow \varepsilon | - | = $$
    $$ Operators2 \rightarrow \varepsilon | = $$
    $$ Operators3 \rightarrow \varepsilon | = $$
@@ -259,7 +259,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们合并上述各词法可得
-   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
    $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1 $$
    $$ octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
