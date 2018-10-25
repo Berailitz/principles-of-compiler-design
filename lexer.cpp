@@ -17,12 +17,7 @@ TextReader::TextReader(const string &filename) : source(filename)
 
 char TextReader::get_next_char()
 {
-    // TODO, \0 for eof, blanks included
-}
-
-void TextReader::retract()
-{
-    // move end_index back
+    // TODO, \0 for eof, blanks included, watch is_in_retraction
 }
 
 Lexer::Lexer(queue<Token> &token_queue)
@@ -72,42 +67,44 @@ void Lexer::prase(const string &filename)
                         set_state(LEX_DFA_string1);
                         break;
                     case '-':
-                        set_state(LEX_DFA_UnaryOperators1);
+                        set_state(LEX_DFA_Operators1);
                         break;
                     case '!':
-                        set_state(LEX_DFA_UnaryOperators2);
+                        set_state(LEX_DFA_Operators2);
                         break;
                     case '%':
-                        set_state(LEX_DFA_UnaryOperators3);
+                        set_state(LEX_DFA_Operators3);
                         break;
                     case '&':
-                        set_state(LEX_DFA_UnaryOperators4);
+                        set_state(LEX_DFA_Operators4);
                         break;
                     case '*':
-                        set_state(LEX_DFA_UnaryOperators5);
+                        set_state(LEX_DFA_Operators5);
                         break;
                     case '/':
-                        set_state(LEX_DFA_UnaryOperators6comments1);
+                        set_state(LEX_DFA_Operators6comments1);
                         break;
                     case '^':
-                        set_state(LEX_DFA_UnaryOperators7);
+                        set_state(LEX_DFA_Operators7);
                         break;
                     case '|':
-                        set_state(LEX_DFA_UnaryOperators8);
+                        set_state(LEX_DFA_Operators8);
                         break;
                     case '+':
-                        set_state(LEX_DFA_UnaryOperators9);
+                        set_state(LEX_DFA_Operators9);
                         break;
                     case '<':
-                        set_state(LEX_DFA_UnaryOperators10);
+                        set_state(LEX_DFA_Operators10);
                         break;
                     case '=':
-                        set_state(LEX_DFA_UnaryOperators11);
+                        set_state(LEX_DFA_Operators11);
                         break;
                     case '>':
-                        set_state(LEX_DFA_UnaryOperators12);
+                        set_state(LEX_DFA_Operators12);
                         break;
                     case ':':
+                        set_state(LEX_DFA_Operators15);
+                        break;
                     case '?':
                         receive_token(TernaryOperatorTokenType, false);
                         break;
@@ -285,7 +282,7 @@ void Lexer::prase(const string &filename)
                 receive_token(StringTokenType, false);
             }
             break;
-        case LEX_DFA_UnaryOperators6comments1:
+        case LEX_DFA_Operators6comments1:
             switch (next_char)
             {
             case '=':
@@ -326,7 +323,7 @@ void Lexer::prase(const string &filename)
                 set_state(LEX_DFA_commentCrossLine2);
             }
             break;
-        case LEX_DFA_UnaryOperators1:
+        case LEX_DFA_Operators1:
             switch (next_char)
             {
             case '-':
@@ -340,8 +337,8 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators2:
-        case LEX_DFA_UnaryOperators7:
+        case LEX_DFA_Operators2:
+        case LEX_DFA_Operators7:
             switch (next_char)
             {
             case '=':
@@ -352,11 +349,11 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators3:
-        case LEX_DFA_UnaryOperators5:
-        case LEX_DFA_UnaryOperators11:
-        case LEX_DFA_UnaryOperators13:
-        case LEX_DFA_UnaryOperators14:
+        case LEX_DFA_Operators3:
+        case LEX_DFA_Operators5:
+        case LEX_DFA_Operators11:
+        case LEX_DFA_Operators13:
+        case LEX_DFA_Operators14:
             switch (next_char)
             {
             case '=':
@@ -367,7 +364,7 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators4:
+        case LEX_DFA_Operators4:
             switch (next_char)
             {
             case '&':
@@ -379,7 +376,7 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators8:
+        case LEX_DFA_Operators8:
             switch (next_char)
             {
             case '|':
@@ -391,7 +388,7 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators9:
+        case LEX_DFA_Operators9:
             switch (next_char)
             {
             case '+':
@@ -405,11 +402,11 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators10:
+        case LEX_DFA_Operators10:
             switch (next_char)
             {
             case '<':
-                set_state(LEX_DFA_UnaryOperators13);
+                set_state(LEX_DFA_Operators13);
                 break;
             case '=':
                 receive_token(BinaryOperatorTokenType, false);
@@ -419,11 +416,11 @@ void Lexer::prase(const string &filename)
                 break;
             }
             break;
-        case LEX_DFA_UnaryOperators12:
+        case LEX_DFA_Operators12:
             switch (next_char)
             {
             case '>':
-                set_state(LEX_DFA_UnaryOperators14);
+                set_state(LEX_DFA_Operators14);
                 break;
             case '=':
                 receive_token(BinaryOperatorTokenType, false);
@@ -431,6 +428,15 @@ void Lexer::prase(const string &filename)
             default:
                 receive_token(BinaryOperatorTokenType, true);
                 break;
+            }
+            break;
+        case LEX_DFA_Operators15:
+            if (next_char == ':')
+            {
+                receive_token(BinaryOperatorTokenType, false);
+            }
+            else {
+                receive_token(BinaryOperatorTokenType, true);
             }
             break;
         }
@@ -480,7 +486,7 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
     set_state(LEX_DFA_languages);
     if (do_retract)
     {
-        reader->retract();
+        reader->is_in_retraction = true;
     }
     reader->reset_current_string();
 }

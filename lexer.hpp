@@ -148,40 +148,44 @@ const unordered_map<string, int> *DELIMITER_TABLE = new unordered_map<string, in
      {"}", 5},
      {",", 6},
      {";", 7}});
-const int LEX_DFA_error = -1;
-const int LEX_DFA_languages = 1;
-const int LEX_DFA_identifier1 = 2;
-const int LEX_DFA_octs1hexs1 = 3;
-const int LEX_DFA_octs2 = 4;
-const int LEX_DFA_hexs2 = 5;
-const int LEX_DFA_hexs3 = 6;
-const int LEX_DFA_decs1floats1 = 7;
-const int LEX_DFA_decs2 = 8;
-const int LEX_DFA_decs3 = 9;
-const int LEX_DFA_floats2 = 10;
-const int LEX_DFA_floats3 = 11;
-const int LEX_DFA_floats4 = 12;
-const int LEX_DFA_floats5 = 13;
-const int LEX_DFA_chars1 = 14;
-const int LEX_DFA_chars2 = 15;
-const int LEX_DFA_string1 = 16;
-const int LEX_DFA_UnaryOperators6comments1 = 17;
-const int LEX_DFA_commentInLine2 = 18;
-const int LEX_DFA_commentCrossLine2 = 19;
-const int LEX_DFA_commentCrossLine3 = 20;
-const int LEX_DFA_UnaryOperators1 = 21;
-const int LEX_DFA_UnaryOperators2 = 22;
-const int LEX_DFA_UnaryOperators3 = 23;
-const int LEX_DFA_UnaryOperators4 = 24;
-const int LEX_DFA_UnaryOperators5 = 25;
-const int LEX_DFA_UnaryOperators7 = 26;
-const int LEX_DFA_UnaryOperators8 = 27;
-const int LEX_DFA_UnaryOperators9 = 28;
-const int LEX_DFA_UnaryOperators10 = 29;
-const int LEX_DFA_UnaryOperators11 = 30;
-const int LEX_DFA_UnaryOperators12 = 31;
-const int LEX_DFA_UnaryOperators13 = 32;
-const int LEX_DFA_UnaryOperators14 = 33;
+enum LEX_DFA_STATE
+{
+    LEX_DFA_error,
+    LEX_DFA_languages,
+    LEX_DFA_identifier1,
+    LEX_DFA_octs1hexs1,
+    LEX_DFA_octs2,
+    LEX_DFA_hexs2,
+    LEX_DFA_hexs3,
+    LEX_DFA_decs1floats1,
+    LEX_DFA_decs2,
+    LEX_DFA_decs3,
+    LEX_DFA_floats2,
+    LEX_DFA_floats3,
+    LEX_DFA_floats4,
+    LEX_DFA_floats5,
+    LEX_DFA_chars1,
+    LEX_DFA_chars2,
+    LEX_DFA_string1,
+    LEX_DFA_Operators6comments1,
+    LEX_DFA_commentInLine2,
+    LEX_DFA_commentCrossLine2,
+    LEX_DFA_commentCrossLine3,
+    LEX_DFA_Operators1,
+    LEX_DFA_Operators2,
+    LEX_DFA_Operators3,
+    LEX_DFA_Operators4,
+    LEX_DFA_Operators5,
+    LEX_DFA_Operators7,
+    LEX_DFA_Operators8,
+    LEX_DFA_Operators9,
+    LEX_DFA_Operators10,
+    LEX_DFA_Operators11,
+    LEX_DFA_Operators12,
+    LEX_DFA_Operators13,
+    LEX_DFA_Operators14,
+    LEX_DFA_Operators15
+};
 
 class CompilationException : public exception
 {
@@ -246,10 +250,10 @@ public:
     ~TextReader();
     int start_index = 0;
     int end_index = 1;
+    bool is_in_retraction = false;
     char get_next_char();
     void reset_current_string();
     string get_current_string() const;
-    void retract();
 private:
     string *_buffer = nullptr;
     ifstream source;
@@ -264,7 +268,7 @@ public:
 private:
     int row = 0;
     int column = 0;
-    int _state = LEX_DFA_languages;
+    LEX_DFA_STATE _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
     queue<Token> &_token_queue;

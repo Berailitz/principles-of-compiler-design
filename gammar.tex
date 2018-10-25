@@ -8,14 +8,14 @@
 \begin{document}
 \begin{equation}
 	\begin{aligned}
-		languages & \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1               \\
-		          & | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3                         \\
-		          & | \& \ UnaryOperators4 | * \ UnaryOperators5                                               \\
-		          & | / \ UnaryOperators6comments1 | \wedge \ UnaryOperators7                                  \\
-		          & | \ | \ UnaryOperators8 | + \ UnaryOperators9                                              \\
-		          & | < \ UnaryOperators10 | = \ UnaryOperators11                                              \\
-		          & | > \ UnaryOperators12 | letter \ identifier1                                              \\
-		          & | : | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ;
+		languages & \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1           \\
+		          & | - \ Operators1 | ! \ Operators2 | \% \ Operators3                                    \\
+		          & | \& \ Operators4 | * \ Operators5                                                     \\
+		          & | / \ Operators6comments1 | \wedge \ Operators7                                        \\
+		          & | \ | \ Operators8 | + \ Operators9                                                    \\
+		          & | < \ Operators10 | = \ Operators11                                                    \\
+		          & | > \ Operators12 | \colon \ Operators15 | letter \ identifier1                            \\
+		          & | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ;
 	\end{aligned}
 \end{equation}
 \begin{equation}
@@ -65,8 +65,8 @@
 \end{equation}
 \begin{equation}
 	\begin{aligned}
-		UnaryOperators6comments1 \rightarrow \varepsilon | = & | / \ commentInLine2   \\
-		                                                     & |* \ commentCrossLine2
+		Operators6comments1 \rightarrow \varepsilon | = & | / \ commentInLine2   \\
+		                                                & |* \ commentCrossLine2
 	\end{aligned}
 \end{equation}
 \begin{equation}
@@ -82,43 +82,46 @@
 	commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2
 \end{equation}
 \begin{equation}
-	UnaryOperators1 \rightarrow \varepsilon | - | =
+	Operators1 \rightarrow \varepsilon | - | =
 \end{equation}
 \begin{equation}
-	UnaryOperators2 \rightarrow \varepsilon | =
+	Operators2 \rightarrow \varepsilon | =
 \end{equation}
 \begin{equation}
-	UnaryOperators3 \rightarrow \varepsilon | =
+	Operators3 \rightarrow \varepsilon | =
 \end{equation}
 \begin{equation}
-	UnaryOperators4 \rightarrow \varepsilon | \& | =
+	Operators4 \rightarrow \varepsilon | \& | =
 \end{equation}
 \begin{equation}
-	UnaryOperators5 \rightarrow \varepsilon | =
+	Operators5 \rightarrow \varepsilon | =
 \end{equation}
 \begin{equation}
-	UnaryOperators7 \rightarrow \varepsilon | =
+	Operators7 \rightarrow \varepsilon | =
 \end{equation}
 \begin{equation}
-	UnaryOperators8 \rightarrow \varepsilon | \ | | \ =
+	Operators8 \rightarrow \varepsilon | \ | | \ =
 \end{equation}
 \begin{equation}
-	UnaryOperators9 \rightarrow \varepsilon | + | =
+	Operators9 \rightarrow \varepsilon | + | =
 \end{equation}
 \begin{equation}
-	UnaryOperators10 \rightarrow \varepsilon | = | < UnaryOperators13
+	Operators10 \rightarrow \varepsilon | = | < Operators13
 \end{equation}
 \begin{equation}
-	UnaryOperators11 \rightarrow \varepsilon | =
+	Operators11 \rightarrow \varepsilon | =
 \end{equation}
 \begin{equation}
-	UnaryOperators12 \rightarrow \varepsilon | = | > UnaryOperators14
+	Operators12 \rightarrow \varepsilon | = | > Operators14
 \end{equation}
 \begin{equation}
-	UnaryOperators13 \rightarrow \varepsilon | =
+	Operators13 \rightarrow \varepsilon | =
 \end{equation}
 \begin{equation}
-	UnaryOperators14 \rightarrow \varepsilon | =
+	Operators14 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators15 \rightarrow \varepsilon | \colon
 \end{equation}
 
 \end{document}

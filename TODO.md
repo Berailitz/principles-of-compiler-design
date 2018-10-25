@@ -209,21 +209,22 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们借用语法分析中的首符号集的概念，对各个运算符进行分析，得到如下文法
-   $$ UnaryOperators \rightarrow : | ? | \sim | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / | UnaryOperators6 | \wedge \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 $$
-   $$ UnaryOperators1 \rightarrow \varepsilon | - | = $$
-   $$ UnaryOperators2 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators3 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators4 \rightarrow \varepsilon | \& | = $$
-   $$ UnaryOperators5 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators6 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators7 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators8 \rightarrow \varepsilon | \ | | \ = $$
-   $$ UnaryOperators9 \rightarrow \varepsilon | + | = $$
-   $$ UnaryOperators10 \rightarrow \varepsilon | = | < UnaryOperators13 $$
-   $$ UnaryOperators11 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators12 \rightarrow \varepsilon | = | > UnaryOperators14 $$
-   $$ UnaryOperators13 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators14 \rightarrow \varepsilon | = $$
+   $$ UnaryOperators \rightarrow ? | \sim | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / | Operators6 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 $$
+   $$ Operators1 \rightarrow \varepsilon | - | = $$
+   $$ Operators2 \rightarrow \varepsilon | = $$
+   $$ Operators3 \rightarrow \varepsilon | = $$
+   $$ Operators4 \rightarrow \varepsilon | \& | = $$
+   $$ Operators5 \rightarrow \varepsilon | = $$
+   $$ Operators6 \rightarrow \varepsilon | = $$
+   $$ Operators7 \rightarrow \varepsilon | = $$
+   $$ Operators8 \rightarrow \varepsilon | \ | | \ = $$
+   $$ Operators9 \rightarrow \varepsilon | + | = $$
+   $$ Operators10 \rightarrow \varepsilon | = | < Operators13 $$
+   $$ Operators11 \rightarrow \varepsilon | = $$
+   $$ Operators12 \rightarrow \varepsilon | = | > Operators14 $$
+   $$ Operators13 \rightarrow \varepsilon | = $$
+   $$ Operators14 \rightarrow \varepsilon | = $$
+   $$ Operators15 \rightarrow \varepsilon | \colon $$
 
 界符
 ---
@@ -258,7 +259,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们合并上述各词法可得
-   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ UnaryOperators1 | ! \ UnaryOperators2 | \% \ UnaryOperators3 | \& \ UnaryOperators4 | * \ UnaryOperators5 | / \ UnaryOperators6comments1 | \wedge \ UnaryOperators7 | \ | \ UnaryOperators8 | + \ UnaryOperators9 | < \ UnaryOperators10 | = \ UnaryOperators11 | > \ UnaryOperators12 | letter \ identifier1 | : | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
    $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1 $$
    $$ octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
@@ -274,23 +275,24 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ chars1 \rightarrow charNoSq \ chars2 $$
    $$ chars2 \rightarrow '' $$
    $$ string1 \rightarrow '' | charInString \ string1 $$
-   $$ UnaryOperators6comments1 \rightarrow \varepsilon | = | / \ commentInLine2 |* \ commentCrossLine2  $$
+   $$ Operators6comments1 \rightarrow \varepsilon | = | / \ commentInLine2 |* \ commentCrossLine2  $$
    $$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
    $$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
    $$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
-   $$ UnaryOperators1 \rightarrow \varepsilon | - | = $$
-   $$ UnaryOperators2 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators3 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators4 \rightarrow \varepsilon | \& | = $$
-   $$ UnaryOperators5 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators7 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators8 \rightarrow \varepsilon | \ | | \ = $$
-   $$ UnaryOperators9 \rightarrow \varepsilon | + | = $$
-   $$ UnaryOperators10 \rightarrow \varepsilon | = | < UnaryOperators13 $$
-   $$ UnaryOperators11 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators12 \rightarrow \varepsilon | = | > UnaryOperators14 $$
-   $$ UnaryOperators13 \rightarrow \varepsilon | = $$
-   $$ UnaryOperators14 \rightarrow \varepsilon | = $$
+   $$ Operators1 \rightarrow \varepsilon | - | = $$
+   $$ Operators2 \rightarrow \varepsilon | = $$
+   $$ Operators3 \rightarrow \varepsilon | = $$
+   $$ Operators4 \rightarrow \varepsilon | \& | = $$
+   $$ Operators5 \rightarrow \varepsilon | = $$
+   $$ Operators7 \rightarrow \varepsilon | = $$
+   $$ Operators8 \rightarrow \varepsilon | \ | | \ = $$
+   $$ Operators9 \rightarrow \varepsilon | + | = $$
+   $$ Operators10 \rightarrow \varepsilon | = | < Operators13 $$
+   $$ Operators11 \rightarrow \varepsilon | = $$
+   $$ Operators12 \rightarrow \varepsilon | = | > Operators14 $$
+   $$ Operators13 \rightarrow \varepsilon | = $$
+   $$ Operators14 \rightarrow \varepsilon | = $$
+   $$ Operators15 \rightarrow \varepsilon | \colon $$
 
 运行流程
 ====
