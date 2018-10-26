@@ -108,44 +108,44 @@ const unordered_map<string, int> *KEYWORD_TABLE = new unordered_map<string, int>
      {"xor_eq", 85}});
 const unordered_map<string, int> *OPERATOR_TABLE = new unordered_map<string, int>(
     {{"^", 0},
-    {"&", 1},
-    {"|", 2},
-    {"~", 3},
-    {"!", 4},
-    {"<<", 5},
-    {">>", 6},
-    {"+", 7},
-    {"-", 8},
-    {"*", 9},
-    {"/", 10},
-    {".", 11},
-    {"::", 12},
-    {"%", 13},
-    {"=", 14},
-    {"<", 15},
-    {">", 16},
-    {"+=", 17},
-    {"-=", 18},
-    {"*=", 19},
-    {"/=", 20},
-    {"%=", 21},
-    {"^=", 22},
-    {"&=", 23},
-    {"|=", 24},
-    {">>=", 25},
-    {"<<=", 26},
-    {"==", 27},
-    {"!=", 28},
-    {"<=", 29},
-    {">=", 30},
-    {"&&", 31},
-    {"||", 32},
-    {"++", 33},
-    {"--", 34},
-    {"->*", 35},
-    {"->", 36},
-    {"?", 37},
-    {":", 38}});
+     {"&", 1},
+     {"|", 2},
+     {"~", 3},
+     {"!", 4},
+     {"<<", 5},
+     {">>", 6},
+     {"+", 7},
+     {"-", 8},
+     {"*", 9},
+     {"/", 10},
+     {".", 11},
+     {"::", 12},
+     {"%", 13},
+     {"=", 14},
+     {"<", 15},
+     {">", 16},
+     {"+=", 17},
+     {"-=", 18},
+     {"*=", 19},
+     {"/=", 20},
+     {"%=", 21},
+     {"^=", 22},
+     {"&=", 23},
+     {"|=", 24},
+     {">>=", 25},
+     {"<<=", 26},
+     {"==", 27},
+     {"!=", 28},
+     {"<=", 29},
+     {">=", 30},
+     {"&&", 31},
+     {"||", 32},
+     {"++", 33},
+     {"--", 34},
+     {"->*", 35},
+     {"->", 36},
+     {"?", 37},
+     {":", 38}});
 const unordered_map<string, int> *DELIMITER_TABLE = new unordered_map<string, int>(
     {{"(", 0},
      {")", 1},
@@ -226,7 +226,7 @@ const string TOKEN_NAMES[] = {
 
 class TokenValueUnion
 {
-public:
+  public:
     int int_value = 0;
     double float_value;
     char char_value;
@@ -242,7 +242,7 @@ using Token = pair<TokenType, TokenValueUnion>;
 
 class TextReader
 {
-public:
+  public:
     TextReader(const string &filename);
     ~TextReader();
     int start_index = 0;
@@ -254,7 +254,8 @@ public:
     int get_row() const;
     int get_column() const;
     int get_word_counter() const;
-private:
+
+  private:
     int row = 1;
     int column = 1;
     int word_counter = 0;
@@ -265,12 +266,13 @@ private:
 
 class Lexer
 {
-public:
+  public:
     Lexer();
     ~Lexer();
     void prase(const string &filename);
     void print_stat() const;
-private:
+
+  private:
     LEX_DFA_STATE _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;

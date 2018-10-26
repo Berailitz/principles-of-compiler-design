@@ -69,7 +69,8 @@ char TextReader::get_next_char()
             row++;
             column = 1;
         }
-        else {
+        else
+        {
             column++;
         }
     }
@@ -85,7 +86,8 @@ void TextReader::reset_current_string()
         {
             start_index = LEXER_BUFFER_SIZE - 1;
         }
-        else {
+        else
+        {
             start_index = 0;
         }
     }
@@ -95,7 +97,8 @@ void TextReader::reset_current_string()
         {
             start_index = end_index - 1;
         }
-        else {
+        else
+        {
             start_index = end_index;
         }
     }
@@ -110,7 +113,8 @@ string TextReader::get_current_string() const
         {
             current_string.append(_buffer + start_index, end_index - start_index - 1);
         }
-        else {
+        else
+        {
             current_string.append(_buffer + start_index, end_index - start_index);
         }
     }
@@ -121,7 +125,8 @@ string TextReader::get_current_string() const
         {
             current_string.append(_buffer, end_index - 1);
         }
-        else {
+        else
+        {
             current_string.append(_buffer, end_index);
         }
     }
@@ -402,7 +407,8 @@ void Lexer::prase(const string &filename)
             else if (next_char != '\'')
             {
                 set_state(LEX_DFA_chars3);
-            } else
+            }
+            else
             {
                 raise_error();
             }
@@ -631,7 +637,8 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         {
             token.second.int_value = 0;
         }
-        else {
+        else
+        {
             token.second.int_value = atoi(text.c_str());
         }
         break;
@@ -640,7 +647,8 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         {
             token.second.float_value = 0;
         }
-        else {
+        else
+        {
             token.second.float_value = atof(text.c_str());
         }
         break;
@@ -692,7 +700,8 @@ void Lexer::raise_error()
         receive_token(CharTokenType, false);
         break;
     }
-    cout << endl << "Jump to next line.>" << endl;
+    cout << endl
+         << "Jump to next line.>" << endl;
     while (next_char != ';')
     {
         next_char = reader->get_next_char();
