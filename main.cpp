@@ -2,6 +2,7 @@
 
 int main(int argc, char const *argv[])
 {
+    string filename;
     Lexer lexer;
     if (argc == 2)
     {
@@ -9,7 +10,9 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        lexer.prase("test.cpp");
+        cout << "Please enter target source filename: ";
+        cin >> filename;
+        lexer.prase(filename);
     }
     cout << endl;
     lexer.print_stat();

@@ -1,0 +1,324 @@
+\documentclass[UTF8]{ctexart}
+    \usepackage{amsmath}
+    \usepackage{geometry}
+    \usepackage{url}
+
+    \title{词法分析程序说明文档}
+    \author{熊光正}
+    \date{\today}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{符号说明}
+\begin{enumerate}
+	\item $[a-bc-de...]$: 序列中$a$至$b$、$c$至$d$或$e$中的任意字符；
+	\item $[\wedge a-bc-de...]$: 不在序列中$a$至$b$、$c$至$d$或$e$中的任意字符；
+	\item $languages$: 所有合法字符串；
+	\item $ints$: 一个无符号整数；
+	\item $octs$: 8进制无符号整数；
+	\item $oct = [0-7]$: 0 至 7 的一位阿拉伯数字；
+	\item $decs$: 10进制无符号整数；
+	\item $dec = [0-9]$: 0 至 9 的一位阿拉伯数字；
+	\item $dec1 = [1-9]$: 1 至 9 的一位阿拉伯数字；
+	\item $hexs$: 16进制无符号整数；
+	\item $hex = [1-9a-eA-E]$: 0 至 9 的一位阿拉伯数字，或$A$至$E$的一位大小写字母；
+	\item $floats$: 10进制无符号浮点数；
+	\item $float_no_e$: 10进制无符号、没有使用科学记数法表示的浮点数；
+	\item $chars$: 字符型；
+	\item $char$: 一位任意字符；
+	\item $charNoSqBs = [\wedge '\backslash]$: 一位非单引号、也非反斜线（转义符）的字符；
+	\item $charInString = [\wedge "]$: 一位非双引号的字符；
+	\item $charNoBl = [\wedge \backslash n]$: 一位非换行符的字符，可出现在单行注释中；
+	\item $charNoStar = [\wedge *]$: 一位非星号的字符，用于跨行注释的识别；
+	\item $charNoBs = [\wedge /]$: 一位非反斜杠的字符，用于跨行注释的识别；
+	\item $letter$: 考虑到一位大小写字母字符的功能与下划线相等，我们用$letter$表示一位大小写字母字符或下划线；
+	\item $strings$: 字符串型；
+	\item $keyword$: 关键字；
+	\item $identifier$: 标识符；
+\end{enumerate}
+注：为便于识别，必要时，我们使用空格分隔正则表达式中的各个符号。
+\section{文法的推导}
+\subsection{关键字和标识符}
+考虑到关键字和标识符均服从正则表达式$letter (letter|ddec|\_)^*$，我们先将其视为同一类型的符号，识别出再进行分类
+，其文法为:
+$$ identifier \rightarrow letter \ identifier1 $$
+$$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1 $$
+\subsection{整数}
+我们分别识别$8$进制、$10$进制和$16$进制的整数
+\subsubsection{$8$进制整数}
+以$0$开始，由$0$至$7$的整数组成，且长度不小于$2$，即
+$$ octs = 0 \ {oct}^+ $$
+，其文法为
+$$ octs \rightarrow 0 \ octs1 $$
+$$ octs1 \rightarrow oct \ octs2 $$
+$$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
+\subsubsection{$10$进制整数}
+若不以科学记数法表示，以$dec1$开始，由$dec$组成；若以科学记数法表示，则在不以科学记数法表示的整数的基础上
+附加大小写英语字母$e$，正负号，和任意数字，即加上$0|((E|e)(+|-)?dec+)$。综上所述，其正则式为
+$$ decs = 0 | dec1 \ dec+((E|e)(+|-)?dec+)? $$
+其文法为
+$$ decs \rightarrow dec1 \ decs1  $$
+$$ decs1 \rightarrow \varepsilon | dec \ decs1 | E \ decs2 | e \ decs2 $$
+$$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3  $$
+$$ decs3 \rightarrow \varepsilon | dec \ decs3  $$
+\subsubsection{$16$进制整数}
+以$0x$开始，由$hex$组成，且长度不小于$3$，即
+$$ hexs = 0 \ x  \ {hex}^+ $$
+其文法为
+$$ hexs \rightarrow 0 \ hexs1 $$
+$$ hexs1 \rightarrow x \ hexs2 $$
+$$ hexs2 \rightarrow hex \ hexs3 $$
+$$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
+\subsubsection{所有整数}
+综上所述，整数的文法为
+$$ ints \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1 $$
+$$ octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2 $$
+$$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
+$$ hexs2 \rightarrow hex \ hexs3 $$
+$$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
+$$ decs1 \rightarrow \varepsilon | dec \ decs1 | E \ decs2 | e \ decs2 $$
+$$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3  $$
+$$ decs3 \rightarrow \varepsilon | dec \ decs3  $$
+依据上述文法识别到整型后，我们通过$atoi$函数将其转换为整数。
+\subsection{浮点数}
+对于非科学记数法表示的浮点数，其小数点前、后的部分可分别视为一个$10$进制整数；对于科学记数法表示的浮点数，
+其指数部分可以视为一个$10$进制有符号或无符号整数。故其正则式为
+$$ floats = decs.{dec}^+(e|E)(+|-)dec $$
+，其文法为
+$$ floats \rightarrow dec1 \ floats1 $$
+$$ floats1 \rightarrow dec \ floats1 | . \ floats2 $$
+$$ floats2 \rightarrow dec \ floats3 $$
+$$ floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4 $$
+$$ floats4 \rightarrow dec \ floats5 $$
+$$ floats5 \rightarrow \varepsilon | dec \ floats5 $$
+依据上述文法识别到浮点型后，我们通过$atof$函数将其转换为浮点数
+\subsection{（单个）字符}
+由单引号、非单引号字符、单引号组成，其正则式为
+$$ ` \ (charNoSqBs | \backslash \ char) \ ' $$
+，其文法为
+$$ chars \rightarrow ' \ chars1 $$
+$$ chars1 \rightarrow \backslash \ chars2 | charNoSqBs \ chars3 $$
+$$ chars2 \rightarrow char \ chars3 $$
+$$ chars3 \rightarrow ' $$
+\subsection{字符串}
+由双引号、非双引号也非换行符的字符、双引号组成，其正则式为
+$$ '' \ {(charInString | \backslash \ char)}^* \ '' $$
+，其文法为
+$$ strings \rightarrow '' \ strings1 $$
+$$ strings1 \rightarrow '' | \backslash strings2 | charInString \ strings1 $$
+$$ strings2 \rightarrow char \ strings1 $$
+\subsection{运算符}
+我们借用语法分析中的首符号集的概念，对各个运算符进行分析，得到如下文法
+\begin{equation}
+	\begin{aligned}
+		UnaryOperators \rightarrow & . | ? | \sim | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 \\
+		                           & | * \ Operators5 | / | Operators6 | \wedge \ Operators7 | \ | \ Operators8         \\
+		                           & | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12             \\
+		                           & | \colon \ Operators15
+	\end{aligned}
+\end{equation}
+$$ Operators1 \rightarrow \varepsilon | - | = $$
+$$ Operators2 \rightarrow \varepsilon | = $$
+$$ Operators3 \rightarrow \varepsilon | = $$
+$$ Operators4 \rightarrow \varepsilon | \& | = $$
+$$ Operators5 \rightarrow \varepsilon | = $$
+$$ Operators6 \rightarrow \varepsilon | = $$
+$$ Operators7 \rightarrow \varepsilon | = $$
+$$ Operators8 \rightarrow \varepsilon | \ | | \ = $$
+$$ Operators9 \rightarrow \varepsilon | + | = $$
+$$ Operators10 \rightarrow \varepsilon | = | < Operators13 $$
+$$ Operators11 \rightarrow \varepsilon | = $$
+$$ Operators12 \rightarrow \varepsilon | = | > Operators14 $$
+$$ Operators13 \rightarrow \varepsilon | = $$
+$$ Operators14 \rightarrow \varepsilon | = $$
+$$ Operators15 \rightarrow \varepsilon | \colon $$
+\subsection{界符}
+分析可知每个界符（终结符）均仅在一个非终结符的首符号集中，故凡遇到终结符界符，即可认定遇到了界符符号，其文法为
+$$ delimiters \rightarrow (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+\subsection{注释}
+\subsubsection{单行注释}
+由$//$开始，遇到换行符，其正则式为
+$$ / \ / \ {charNoBl}^* \ \backslash n $$
+，其文法为
+$$ commentInLine \rightarrow / \ commentInLine1 $$
+$$ commentInLine1 \rightarrow / \ commentInLine2 $$
+$$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
+\subsubsection{跨行注释}
+由$/*$开始，遇到$*/$结束，其正则式为
+$$ /*({charNoStar}^*|*{charNoBs})^**/ $$
+，其文法为
+$$ commentCrossLine \rightarrow / \ commentCrossLine1 $$
+$$ commentCrossLine1 \rightarrow * \ commentCrossLine2 $$
+$$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
+$$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
+\subsubsection{宏}
+为简化程序，我们将以$\#$开始的宏也视为注释处理，其正则式为
+$$ \# {charNoBl}^* \ \backslash n $$
+，其文法为
+$$ commentOfMacros \rightarrow \# \ commentOfMacros1 $$
+$$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
+\subsubsection{所有注释}
+综上所述，注释的文法为
+$$ comments \rightarrow / \ comments1 | \# \ commentOfMacros1 $$
+$$ comments1 \rightarrow / \ commentInLine2 |* \ commentCrossLine2  $$
+$$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
+$$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
+$$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
+$$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
+\subsection{所有文法}
+\begin{equation}
+	\begin{aligned}
+		languages & \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ strings1                                   \\
+		          & | - \ Operators1 | ! \ Operators2 | \% \ Operators3  | \& \ Operators4                                              \\
+		          & | * \ Operators5  | / \ Operators6comments1 | \wedge \ Operators7                                                   \\
+		          & | \ | \ Operators8 | + \ Operators9  | < \ Operators10 | = \ Operators11                                            \\
+		          & | > \ Operators12  | \colon \ Operators15 | letter \ identifier1                                                    \\
+		          & | \# \ commentOfMacros1  | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ;
+	\end{aligned}
+\end{equation}
+\begin{equation}
+	identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1
+\end{equation}
+\begin{equation}
+	octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2
+\end{equation}
+\begin{equation}
+	octs2 \rightarrow \varepsilon | oct \ octs2
+\end{equation}
+\begin{equation}
+	hexs2 \rightarrow hex \ hexs3
+\end{equation}
+\begin{equation}
+	hexs3 \rightarrow \varepsilon | hex \ hexs3
+\end{equation}
+\begin{equation}
+	decs1floats1 \rightarrow \varepsilon | dec \ decs1floats1 | E \ decs2 | e \ decs2 | . \ floats2
+\end{equation}
+\begin{equation}
+	decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3
+\end{equation}
+\begin{equation}
+	decs3 \rightarrow \varepsilon | dec \ decs3
+\end{equation}
+\begin{equation}
+	floats2 \rightarrow dec \ floats3
+\end{equation}
+\begin{equation}
+	floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4
+\end{equation}
+\begin{equation}
+	floats4 \rightarrow dec \ floats5
+\end{equation}
+\begin{equation}
+	floats5 \rightarrow \varepsilon | dec \ floats5
+\end{equation}
+\begin{equation}
+	chars1 \rightarrow \backslash \ chars2 | charNoSqBs \ chars3
+\end{equation}
+\begin{equation}
+	chars2 \rightarrow char \ chars3
+\end{equation}
+\begin{equation}
+	chars3 \rightarrow '
+\end{equation}
+\begin{equation}
+	strings1 \rightarrow '' | \backslash strings2 | charInString \ strings1
+\end{equation}
+\begin{equation}
+	strings2 \rightarrow char \ strings1
+\end{equation}
+\begin{equation}
+	\begin{aligned}
+		Operators6comments1 \rightarrow \varepsilon | = & | / \ commentInLine2   \\
+		                                                & |* \ commentCrossLine2
+	\end{aligned}
+\end{equation}
+\begin{equation}
+	commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2
+\end{equation}
+\begin{equation}
+	\begin{aligned}
+		commentCrossLine2 \rightarrow & * \ commentCrossLine3            \\
+		                              & | charNoStar \ commentCrossLine2
+	\end{aligned}
+\end{equation}
+\begin{equation}
+	commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2
+\end{equation}
+\begin{equation}
+	commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1
+\end{equation}
+\begin{equation}
+	Operators1 \rightarrow \varepsilon | - | =
+\end{equation}
+\begin{equation}
+	Operators2 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators3 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators4 \rightarrow \varepsilon | \& | =
+\end{equation}
+\begin{equation}
+	Operators5 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators7 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators8 \rightarrow \varepsilon | \ | | \ =
+\end{equation}
+\begin{equation}
+	Operators9 \rightarrow \varepsilon | + | =
+\end{equation}
+\begin{equation}
+	Operators10 \rightarrow \varepsilon | = | < Operators13
+\end{equation}
+\begin{equation}
+	Operators11 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators12 \rightarrow \varepsilon | = | > Operators14
+\end{equation}
+\begin{equation}
+	Operators13 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators14 \rightarrow \varepsilon | =
+\end{equation}
+\begin{equation}
+	Operators15 \rightarrow \varepsilon | \colon
+\end{equation}
+\section{程序功能}
+\subsection{识别合法符号及注释}
+依据上述文本，本程序可以识别科学记数法或非科学记数法表示的$8$、$10$、$16$进制的无符号整数和浮点数、带转义或不带转义的单个字符或字符串
+，各类括号或分号等界符，以及文法中列举的各类操作符。词法分析程序会识别并跳过行内和跨行注释，和$\#$开始的宏指令。
+\subsection{统计文本信息}
+本程序可以统计并输出源文件的行数和字符总数。
+\subsection{错误处理}
+本程序可以识别源文件中出现的词法错误，报告其所在行数、列数，并继续分析后面的源代码。对于字符型中缺失后单引号，词法处理程序可以自动纠正。
+\section{程序使用说明}
+运行程序后根据提示输入目标文件名，或将目标文件拖拽至词法分析程序的可执行文件上。
+\section{样例使用说明}
+\begin{enumerate}
+	\item 合法源文件样例
+	\item 含错误源文件样例
+\end{enumerate}
+\section{备注}
+\begin{enumerate}
+	\item 词法来源：编译器$Clang++$上进行的测试（版本号：$3.9.1$）和互联网（$cppreference.com$等）；
+	\item 假设字符均合法;
+	\item 将所有$($, $)$, $[$, $]$, $\{$, $\}$, $,$视为界符，即
+	      \begin{enumerate}
+		      \item 将$[index]$中的括号视为界符，数字视为常数、标识符或表达式
+		      \item 将$(type)$中的括号视为界符，类型视为关键字或标识符
+		      \item 将${value1, value2}$中的$,$视为界符
+	      \end{enumerate}
+	\item 将$static\_cast$, $dynamic\_cast$, $const\_cast$, $reinterpret\_cast$, $new$, $delete$, $typeid$, $noexcept$, $alignof$视为关键字
+	\item 暂不考虑运算符$sizeof$, $sizeof...$
+	\item 将$=$, $-=$, $+=$, $*=$, $/=$, $\%=$, $\wedge=$, $\&=$, $|=$, $<<$, $>>$, $>>=$, $<<=$, $?$, $:$视为运算符
+	\item 暂不考虑``$,$''作为运算符时，先后计算其左值和右值，并返回右值的特性
+	\item $IntTokenType$, $FloatTokenType$均为无符号数，故将$(+|-)(digit|float)$中的$+$, $-$视为运算符
+\end{enumerate}
+\end{document}
