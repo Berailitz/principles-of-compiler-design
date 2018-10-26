@@ -171,7 +171,9 @@ enum LEX_DFA_STATE
     LEX_DFA_floats5,
     LEX_DFA_chars1,
     LEX_DFA_chars2,
-    LEX_DFA_string1,
+    LEX_DFA_chars3,
+    LEX_DFA_strings1,
+    LEX_DFA_strings2,
     LEX_DFA_Operators6comments1,
     LEX_DFA_commentInLine2,
     LEX_DFA_commentCrossLine2,
@@ -270,6 +272,8 @@ private:
     LEX_DFA_STATE _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
+    bool is_in_error = false;
+    int error_counter = 0;
     queue<Token> &_token_queue;
     int *token_counter = nullptr;
     void set_state(const LEX_DFA_STATE next_state);

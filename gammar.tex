@@ -8,7 +8,7 @@
 \begin{document}
 \begin{equation}
 	\begin{aligned}
-		languages & \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1           \\
+		languages & \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ strings1           \\
 		          & | - \ Operators1 | ! \ Operators2 | \% \ Operators3  | \& \ Operators4                                   \\
 		          & | * \ Operators5  | / \ Operators6comments1 | \wedge \ Operators7                                                    \\
 		          & | \ | \ Operators8 | + \ Operators9  | < \ Operators10 | = \ Operators11                                                   \\
@@ -53,13 +53,19 @@
 	floats5 \rightarrow \varepsilon | dec \ floats5
 \end{equation}
 \begin{equation}
-	chars1 \rightarrow charNoSq \ chars2
+	chars1 \rightarrow \backslash \ chars2 | charNoSqBs \ chars3
 \end{equation}
 \begin{equation}
-	chars2 \rightarrow '
+	chars2 \rightarrow char \ chars3
 \end{equation}
 \begin{equation}
-	string1 \rightarrow '' | charInString \ string1
+	chars3 \rightarrow '
+\end{equation}
+\begin{equation}
+	strings1 \rightarrow '' | \backslash strings2 | charInString \ strings1
+\end{equation}
+\begin{equation}
+	strings2 \rightarrow char \ strings1
 \end{equation}
 \begin{equation}
 	\begin{aligned}

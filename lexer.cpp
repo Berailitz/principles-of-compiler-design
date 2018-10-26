@@ -198,7 +198,7 @@ void Lexer::prase(const string &filename)
                     set_state(LEX_DFA_chars1);
                     break;
                 case '"':
-                    set_state(LEX_DFA_string1);
+                    set_state(LEX_DFA_strings1);
                     break;
                 case '-':
                     set_state(LEX_DFA_Operators1);
@@ -396,16 +396,22 @@ void Lexer::prase(const string &filename)
             }
             break;
         case LEX_DFA_chars1:
-            if (next_char == '\'')
-            {
-                raise_error();
-            }
-            else
+            if (next_char == '\\')
             {
                 set_state(LEX_DFA_chars2);
             }
+            else if (next_char != '\'')
+            {
+                set_state(LEX_DFA_chars3);
+            } else
+            {
+                raise_error();
+            }
             break;
         case LEX_DFA_chars2:
+            set_state(LEX_DFA_chars3);
+            break;
+        case LEX_DFA_chars3:
             if (next_char == '\'')
             {
                 receive_token(CharTokenType, false);
@@ -415,11 +421,18 @@ void Lexer::prase(const string &filename)
                 raise_error();
             }
             break;
-        case LEX_DFA_string1:
+        case LEX_DFA_strings1:
             if (next_char == '"')
             {
                 receive_token(StringTokenType, false);
             }
+            else if (next_char == '\\')
+            {
+                set_state(LEX_DFA_strings2);
+            }
+            break;
+        case LEX_DFA_strings2:
+            set_state(LEX_DFA_strings1);
             break;
         case LEX_DFA_Operators6comments1:
             switch (next_char)
@@ -581,7 +594,6 @@ void Lexer::prase(const string &filename)
             }
             break;
         case LEX_DFA_error:
-            cout << "ERROR";
             break;
         }
         next_char = reader->get_next_char();
@@ -615,10 +627,22 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         }
         break;
     case IntTokenType:
-        token.second.int_value = atoi(text.c_str());
+        if (is_in_error)
+        {
+            token.second.int_value = 0;
+        }
+        else {
+            token.second.int_value = atoi(text.c_str());
+        }
         break;
     case FloatTokenType:
-        token.second.float_value = atof(text.c_str());
+        if (is_in_error)
+        {
+            token.second.float_value = 0;
+        }
+        else {
+            token.second.float_value = atof(text.c_str());
+        }
         break;
     case CharTokenType:
         token.second.char_value = text[1];
@@ -636,18 +660,48 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
     token_counter[type]++;
     set_state(LEX_DFA_languages);
     reader->reset_current_string();
-    cout << dump_token(token);
 }
 
 void Lexer::raise_error()
 {
-    set_state(LEX_DFA_error);
+    char next_char = reader->get_next_char();
+    cout << "ERROR at (" << to_string(reader->get_row()) << ", " << to_string(reader->get_column()) << "): ";
+    is_in_error = true;
+    error_counter++;
+    switch (get_state())
+    {
+    case LEX_DFA_hexs2:
+        cout << "HEX word excepted, maybe `0`?";
+        receive_token(IntTokenType, false);
+        break;
+    case LEX_DFA_decs2:
+        cout << "a digit excepted, maybe `0`?";
+        receive_token(IntTokenType, false);
+        break;
+    case LEX_DFA_floats2:
+    case LEX_DFA_floats4:
+        cout << "a digit excepted, maybe `0`?";
+        receive_token(FloatTokenType, false);
+        break;
+    case LEX_DFA_chars1:
+        cout << "a character excepted, maybe `a`?";
+        receive_token(CharTokenType, false);
+        break;
+    case LEX_DFA_chars3:
+        cout << "missing `'` ?";
+        receive_token(CharTokenType, false);
+        break;
+    }
+    cout << endl << "Jump to next line." << endl;
+    while (next_char != ';')
+    {
+        next_char = reader->get_next_char();
+    }
 }
 
 int Lexer::get_keyword_index(const string text)
 {
     int index = -1;
-    cout << "`" << text << "`" << endl;
     try
     {
         index = KEYWORD_TABLE->at(text);
@@ -661,7 +715,6 @@ int Lexer::get_keyword_index(const string text)
 int Lexer::get_identifier_index(const string text)
 {
     int index = -1;
-    cout << "`" << text << "`" << endl;
     try
     {
         index = identifier_table->at(text);
@@ -676,13 +729,11 @@ int Lexer::get_identifier_index(const string text)
 
 int Lexer::get_operator_index(const string text)
 {
-    cout << "`" << text << "`" << endl;
     return OPERATOR_TABLE->at(text);
 }
 
 int Lexer::get_delimiter_index(const string text)
 {
-    cout << "`" << text << "`" << endl;
     return DELIMITER_TABLE->at(text);
 }
 
@@ -700,6 +751,7 @@ string Lexer::get_stat() const
     }
     stat += (to_string(reader->get_row()) + " lines.\n");
     stat += (to_string(reader->get_word_counter()) + " characters.\n");
+    stat += (to_string(error_counter) + " errors.\n");
     return stat;
 }
 

@@ -26,8 +26,8 @@
 12. `float_no_e`: 10进制无符号、没有使用科学记数法表示的浮点数
 13. `chars`: 字符型
 14. `char`: 一位任意字符
-15. `charNoSq = [^']`: 一位非单引号的字符
-16. `charInString = [^"\n]`: 一位非双引号、也非换行符的字符
+15. `charNoSqBs = [^'\\]`: 一位非单引号、也非反斜线（转义符）的字符
+16. `charInString = [^"]`: 一位非双引号的字符
 17. `charNoBl = [^\n]`: 一位非换行符的字符，可出现在单行注释中
 18. `charNoStar = [^*]`: 一位非星号的字符，用于跨行注释的识别
 19. `charNoBs = [^/]`: 一位非反斜杠的字符，用于跨行注释的识别
@@ -190,20 +190,22 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 由单引号、非单引号字符、单引号组成，其正则式为
-   $$ ` \ charNoSq \ ' $$
+   $$ ` \ (charNoSqBs | \backslash \ char) \ ' $$
    其文法为
    $$ chars \rightarrow ' \ chars1 $$
-   $$ chars1 \rightarrow charNoSq \ chars2 $$
-   $$ chars2 \rightarrow ' $$
+   $$ chars1 \rightarrow \backslash \ chars2 | charNoSqBs \ chars3 $$
+   $$ chars2 \rightarrow char \ chars3 $$
+   $$ chars3 \rightarrow ' $$
 
 字符串
 ---
 
 1. 由双引号、非双引号也非换行符的字符、双引号组成，其正则式为
-   $$ '' \ {charInString}^* \ '' $$
+   $$ '' \ {(charInString | \backslash \ char)}^* \ '' $$
    其文法为
-   $$ strings \rightarrow '' \ string1 $$
-   $$ string1 \rightarrow '' | charInString \ string1 $$
+   $$ strings \rightarrow '' \ strings1 $$
+   $$ strings1 \rightarrow '' | \backslash strings2 | charInString \ strings1 $$
+   $$ strings2 \rightarrow char \ strings1 $$
 
 运算符
 ---
@@ -265,7 +267,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 我们合并上述各词法可得
-   $$ languages \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | \# \ commentOfMacros1 | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ languages \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ strings1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | \# \ commentOfMacros1 | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
    $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1 $$
    $$ octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
@@ -278,9 +280,11 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4 $$
    $$ floats4 \rightarrow dec \ floats5 $$
    $$ floats5 \rightarrow \varepsilon | dec \ floats5 $$
-   $$ chars1 \rightarrow charNoSq \ chars2 $$
-   $$ chars2 \rightarrow '' $$
-   $$ string1 \rightarrow '' | charInString \ string1 $$
+   $$ chars1 \rightarrow \backslash \ chars2 | charNoSqBs \ chars3 $$
+   $$ chars2 \rightarrow char \ chars3 $$
+   $$ chars3 \rightarrow ' $$
+   $$ strings1 \rightarrow '' | \backslash strings2 | charInString \ strings1 $$
+   $$ strings2 \rightarrow char \ strings1 $$
    $$ Operators6comments1 \rightarrow \varepsilon | = | / \ commentInLine2 |* \ commentCrossLine2  $$
    $$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
    $$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
