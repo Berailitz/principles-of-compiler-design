@@ -10,6 +10,7 @@
 
 using namespace std;
 
+const int TOKEN_TYPE_COUNTER = 11;
 const int LEXER_MID_BUFFER_SIZE = 1000;
 const int LEXER_BUFFER_SIZE = LEXER_MID_BUFFER_SIZE * 2;
 const int MAX_TOKEN_QUEUE_SIZE = 10;
@@ -246,7 +247,13 @@ public:
     char get_next_char();
     void reset_current_string();
     string get_current_string() const;
+    int get_row() const;
+    int get_column() const;
+    int get_word_counter() const;
 private:
+    int row = 1;
+    int column = 1;
+    int word_counter = 0;
     void read_file(const int start_position);
     char *_buffer = new char[LEXER_BUFFER_SIZE];
     ifstream source;
@@ -258,13 +265,13 @@ public:
     Lexer(queue<Token> &token_queue);
     ~Lexer();
     void prase(const string &filename);
+    string get_stat() const;
 private:
-    int row = 0;
-    int column = 0;
     LEX_DFA_STATE _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
     queue<Token> &_token_queue;
+    int *token_counter = nullptr;
     void set_state(const LEX_DFA_STATE next_state);
     void raise_error();
     LEX_DFA_STATE get_state();

@@ -39,6 +39,7 @@ void TextReader::read_file(const int start_position)
 char TextReader::get_next_char()
 {
     // blanks included, check is_in_retraction
+    char next_char;
     if (!is_in_retraction)
     {
         end_index++;
@@ -52,15 +53,28 @@ char TextReader::get_next_char()
             end_index = 0;
         }
     }
-    is_in_retraction = false;
     if (end_index == 0)
     {
-        return _buffer[LEXER_BUFFER_SIZE - 1];
+        next_char = _buffer[LEXER_BUFFER_SIZE - 1];
     }
     else
     {
-        return _buffer[end_index - 1];
+        next_char = _buffer[end_index - 1];
     }
+    if (!is_in_retraction)
+    {
+        word_counter++;
+        if (next_char == LINE_DELIMITER)
+        {
+            row++;
+            column = 1;
+        }
+        else {
+            column++;
+        }
+    }
+    is_in_retraction = false;
+    return next_char;
 }
 
 void TextReader::reset_current_string()
@@ -114,18 +128,34 @@ string TextReader::get_current_string() const
     return current_string;
 }
 
+int TextReader::get_column() const
+{
+    return column;
+}
+
+int TextReader::get_row() const
+{
+    return row;
+}
+
+int TextReader::get_word_counter() const
+{
+    return word_counter;
+}
+
 Lexer::Lexer(queue<Token> &token_queue)
     : _token_queue(token_queue),
-      identifier_table(new unordered_map<string, int>)
+      identifier_table(new unordered_map<string, int>),
+      token_counter(new int[TOKEN_TYPE_COUNTER])
 {
-    row = 0;
-    column = 0;
+    fill_n(token_counter, TOKEN_TYPE_COUNTER, 0);
 }
 
 Lexer::~Lexer()
 {
     delete reader;
     delete identifier_table;
+    delete[] token_counter;
 }
 
 void Lexer::set_state(const LEX_DFA_STATE next_state)
@@ -603,6 +633,7 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         break;
     }
     _token_queue.push(token);
+    token_counter[type]++;
     set_state(LEX_DFA_languages);
     reader->reset_current_string();
     cout << dump_token(token);
@@ -658,6 +689,18 @@ int Lexer::get_delimiter_index(const string text)
 bool Lexer::is_oct(const char next_char) const
 {
     return next_char >= '0' && next_char <= '7';
+}
+
+string Lexer::get_stat() const
+{
+    string stat = "Token counters:\n";
+    for (int i = 0; i < TOKEN_TYPE_COUNTER; i++)
+    {
+        stat += (TOKEN_NAMES[i] + ": " + to_string(token_counter[i]) + "\n");
+    }
+    stat += (to_string(reader->get_row()) + " lines.\n");
+    stat += (to_string(reader->get_word_counter()) + " characters.\n");
+    return stat;
 }
 
 string dump_token(const Token &token)

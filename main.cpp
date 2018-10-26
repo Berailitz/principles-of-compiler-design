@@ -10,6 +10,8 @@ int main()
     cout << endl;
     cout << "Tokens:" << endl;
     comsumer.run();
+    cout << endl;
+    cout << lexer.get_stat();
     cout << "Press Enter to exit.";
     cin.get();
     return 0;
