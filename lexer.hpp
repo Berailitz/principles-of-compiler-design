@@ -1,3 +1,6 @@
+#ifndef HEXER_HPP
+#define HEXER_HPP
+
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -225,7 +228,7 @@ const string TOKEN_NAMES[] = {
 class TokenValueUnion
 {
 public:
-    int int_value;
+    int int_value = 0;
     double float_value;
     char char_value;
     string string_value;
@@ -285,6 +288,7 @@ private:
     int get_delimiter_index(const string text);
     void receive_token(const TokenType &type, const bool do_retract); // 将IdentifierTokenType视为关键字或标识符
     bool is_oct(const char next_char) const;
+    bool is_c_letter(const char next_char) const;
 };
 
 string dump_token(const Token &token);
@@ -297,3 +301,5 @@ public:
 private:
     queue<Token> &_token_queue;
 };
+
+#endif

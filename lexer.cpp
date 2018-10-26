@@ -83,10 +83,10 @@ void TextReader::reset_current_string()
     {
         if (is_in_retraction)
         {
-            start_index = 0;
+            start_index = LEXER_BUFFER_SIZE - 1;
         }
         else {
-            start_index = LEXER_BUFFER_SIZE - 1;
+            start_index = 0;
         }
     }
     else
@@ -186,7 +186,7 @@ void Lexer::prase(const string &filename)
             {
                 set_state(LEX_DFA_decs1floats1);
             }
-            else if (isalpha(next_char))
+            else if (is_c_letter(next_char))
             {
                 set_state(LEX_DFA_identifier1);
             }
@@ -268,7 +268,7 @@ void Lexer::prase(const string &filename)
             }
             break;
         case LEX_DFA_identifier1:
-            if (!isalnum(next_char))
+            if (!(is_c_letter(next_char) || isdigit(next_char)))
             {
                 receive_token(IdentifierTokenType, true);
             }
@@ -665,7 +665,7 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
 void Lexer::raise_error()
 {
     char next_char = reader->get_next_char();
-    cout << "ERROR at (" << to_string(reader->get_row()) << ", " << to_string(reader->get_column()) << "): ";
+    cout << "<ERROR at (" << to_string(reader->get_row()) << ", " << to_string(reader->get_column()) << "): ";
     is_in_error = true;
     error_counter++;
     switch (get_state())
@@ -692,7 +692,7 @@ void Lexer::raise_error()
         receive_token(CharTokenType, false);
         break;
     }
-    cout << endl << "Jump to next line." << endl;
+    cout << endl << "Jump to next line.>" << endl;
     while (next_char != ';')
     {
         next_char = reader->get_next_char();
@@ -740,6 +740,11 @@ int Lexer::get_delimiter_index(const string text)
 bool Lexer::is_oct(const char next_char) const
 {
     return next_char >= '0' && next_char <= '7';
+}
+
+bool Lexer::is_c_letter(const char next_char) const
+{
+    return next_char == '_' || isalpha(next_char);
 }
 
 string Lexer::get_stat() const
