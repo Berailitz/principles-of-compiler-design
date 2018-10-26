@@ -147,8 +147,8 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ octs \rightarrow 0 \ octs1 $$
    $$ octs1 \rightarrow oct \ octs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
-3. `10`进制整数：若不以科学记数法表示，以$dec1$开始，由$dec$组成；若以科学记数法表示，则在不以科学记数法表示的整数的基础上附加大小写英语字母$e$，正负号，和任意数字，即加上$(E|e)(+|-)?dec+$。综上所述，其正则式为
-   $$ decs = dec1 \ dec+((E|e)(+|-)?dec+)? $$
+3. `10`进制整数：若不以科学记数法表示，以$dec1$开始，由$dec$组成；若以科学记数法表示，则在不以科学记数法表示的整数的基础上附加大小写英语字母$e$，正负号，和任意数字，即加上$0|((E|e)(+|-)?dec+)$。综上所述，其正则式为
+   $$ decs = 0 | dec1 \ dec+((E|e)(+|-)?dec+)? $$
    其文法为
    $$ decs \rightarrow dec1 \ decs1  $$
    $$ decs1 \rightarrow \varepsilon | dec \ decs1 | E \ decs2 | e \ decs2 $$
@@ -162,8 +162,8 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ hexs2 \rightarrow hex \ hexs3 $$
    $$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
 5. 综上所述，整数的文法为
-   $$ ints \rightarrow 0 \ octs1hexs1 | dec1 \ decs1 $$
-   $$ octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2 $$
+   $$ ints \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1 $$
+   $$ octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
    $$ hexs2 \rightarrow hex \ hexs3 $$
    $$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
@@ -236,7 +236,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
 ---
 
 1. 单行注释: 由`//`开始，遇到换行符，其正则式为
-   $$ / \ / \ {char}^* \ \backslash n $$
+   $$ / \ / \ {charNoBl}^* \ \backslash n $$
    其文法为
    $$ commentInLine \rightarrow / \ commentInLine1 $$
    $$ commentInLine1 \rightarrow / \ commentInLine2 $$
@@ -248,20 +248,26 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ commentCrossLine1 \rightarrow * \ commentCrossLine2 $$
    $$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
    $$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
-3. 综上所述，注释的文法为
-   $$ comments \rightarrow / \ comments1 $$
+3. 为简化程序，我们将以`#`开始的宏也视为注释处理，其正则式为
+   $$ \# {charNoBl}^* \ \backslash n $$
+   其文法为
+   $$ commentOfMacros \rightarrow \# \ commentOfMacros1 $$
+   $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
+4. 综上所述，注释的文法为
+   $$ comments \rightarrow / \ comments1 | \# \ commentOfMacros1 $$
    $$ comments1 \rightarrow / \ commentInLine2 |* \ commentCrossLine2  $$
    $$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
    $$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
    $$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
+   $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 
 总结
 ---
 
 1. 我们合并上述各词法可得
-   $$ languages \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
+   $$ languages \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1 | - \ Operators1 | ! \ Operators2 | \% \ Operators3 | \& \ Operators4 | * \ Operators5 | / \ Operators6comments1 | \wedge \ Operators7 | \ | \ Operators8 | + \ Operators9 | < \ Operators10 | = \ Operators11 | > \ Operators12 | \colon \ Operators15 | letter \ identifier1 | \# \ commentOfMacros1 | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ; $$
    $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1 $$
-   $$ octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2 $$
+   $$ octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2 $$
    $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
    $$ hexs2 \rightarrow hex \ hexs3 $$
    $$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
@@ -279,6 +285,7 @@ $$ identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier
    $$ commentInLine2 \rightarrow \backslash n | charNoBl \ commentInLine2 $$
    $$ commentCrossLine2 \rightarrow * \ commentCrossLine3 | charNoStar \ commentCrossLine2 $$
    $$ commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2 $$
+   $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
    $$ Operators1 \rightarrow \varepsilon | - | = $$
    $$ Operators2 \rightarrow \varepsilon | = $$
    $$ Operators3 \rightarrow \varepsilon | = $$

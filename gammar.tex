@@ -8,21 +8,19 @@
 \begin{document}
 \begin{equation}
 	\begin{aligned}
-		languages & \rightarrow 0 \ octs1hexs1 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1           \\
-		          & | - \ Operators1 | ! \ Operators2 | \% \ Operators3                                    \\
-		          & | \& \ Operators4 | * \ Operators5                                                     \\
-		          & | / \ Operators6comments1 | \wedge \ Operators7                                        \\
-		          & | \ | \ Operators8 | + \ Operators9                                                    \\
-		          & | < \ Operators10 | = \ Operators11                                                    \\
-		          & | > \ Operators12 | \colon \ Operators15 | letter \ identifier1                            \\
-		          & | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ;
+		languages & \rightarrow 0 \ octs1hexs1dec0 | dec1 \ decs1floats1 | ' \ chars1 | '' \ string1           \\
+		          & | - \ Operators1 | ! \ Operators2 | \% \ Operators3  | \& \ Operators4                                   \\
+		          & | * \ Operators5  | / \ Operators6comments1 | \wedge \ Operators7                                                    \\
+		          & | \ | \ Operators8 | + \ Operators9  | < \ Operators10 | = \ Operators11                                                   \\
+		          & | > \ Operators12  | \colon \ Operators15 | letter \ identifier1                                                   \\
+		          & | \# \ commentOfMacros1  | . | ? | \sim | (  \ | \  )  \ | \  [  \ | \  ]  \ | \  \{  \ | \  \}  \ | \  ,  \ | \  ;
 	\end{aligned}
 \end{equation}
 \begin{equation}
 	identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1
 \end{equation}
 \begin{equation}
-	octs1hexs1 \rightarrow oct \ octs2 | x \ hexs2
+	octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2
 \end{equation}
 \begin{equation}
 	octs2 \rightarrow \varepsilon | oct \ octs2
@@ -80,6 +78,9 @@
 \end{equation}
 \begin{equation}
 	commentCrossLine3 \rightarrow / | charNoBs \ commentCrossLine2
+\end{equation}
+\begin{equation}
+	commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1
 \end{equation}
 \begin{equation}
 	Operators1 \rightarrow \varepsilon | - | =

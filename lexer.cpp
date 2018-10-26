@@ -41,19 +41,15 @@ char TextReader::get_next_char()
     // blanks included, check is_in_retraction
     if (!is_in_retraction)
     {
+        end_index++;
         if (end_index == LEXER_MID_BUFFER_SIZE)
         {
             read_file(LEXER_MID_BUFFER_SIZE);
-            end_index++;
         }
         else if (end_index == LEXER_BUFFER_SIZE)
         {
             read_file(0);
             end_index = 0;
-        }
-        else
-        {
-            end_index++;
         }
     }
     is_in_retraction = false;
@@ -154,7 +150,7 @@ void Lexer::prase(const string &filename)
         case LEX_DFA_languages:
             if (next_char == '0')
             {
-                set_state(LEX_DFA_octs1hexs1);
+                set_state(LEX_DFA_octs1hexs1dec0);
             }
             else if (isdigit(next_char))
             {
@@ -222,6 +218,9 @@ void Lexer::prase(const string &filename)
                 case '~':
                     receive_token(UnaryOperatorTokenType, false);
                     break;
+                case '#':
+                    set_state(LEX_DFA_commentOfMacros1);
+                    break;
                 case '(':
                 case ')':
                 case '[':
@@ -244,7 +243,7 @@ void Lexer::prase(const string &filename)
                 receive_token(IdentifierTokenType, true);
             }
             break;
-        case LEX_DFA_octs1hexs1:
+        case LEX_DFA_octs1hexs1dec0:
             if (is_oct(next_char))
             {
                 set_state(LEX_DFA_octs2);
@@ -255,7 +254,7 @@ void Lexer::prase(const string &filename)
             }
             else
             {
-                raise_error();
+                receive_token(IntTokenType, true);
             }
             break;
         case LEX_DFA_octs2:
@@ -410,10 +409,11 @@ void Lexer::prase(const string &filename)
             }
             break;
         case LEX_DFA_commentInLine2:
+        case LEX_DFA_commentOfMacros1:
             if (next_char == LINE_DELIMITER)
             {
-                receive_token(EmptyTokenType, false);
-                // 表示行内注释结束
+                receive_token(EmptyTokenType, true);
+                // 表示行内注释结束，或宏结束
             }
             break;
         case LEX_DFA_commentCrossLine2:

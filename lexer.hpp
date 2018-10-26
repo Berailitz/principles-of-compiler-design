@@ -10,7 +10,7 @@
 
 using namespace std;
 
-const int LEXER_MID_BUFFER_SIZE = 10;
+const int LEXER_MID_BUFFER_SIZE = 1000;
 const int LEXER_BUFFER_SIZE = LEXER_MID_BUFFER_SIZE * 2;
 const int MAX_TOKEN_QUEUE_SIZE = 10;
 const char LINE_DELIMITER = '\n';
@@ -157,7 +157,7 @@ enum LEX_DFA_STATE
     LEX_DFA_error,
     LEX_DFA_languages,
     LEX_DFA_identifier1,
-    LEX_DFA_octs1hexs1,
+    LEX_DFA_octs1hexs1dec0,
     LEX_DFA_octs2,
     LEX_DFA_hexs2,
     LEX_DFA_hexs3,
@@ -175,6 +175,7 @@ enum LEX_DFA_STATE
     LEX_DFA_commentInLine2,
     LEX_DFA_commentCrossLine2,
     LEX_DFA_commentCrossLine3,
+    LEX_DFA_commentOfMacros1,
     LEX_DFA_Operators1,
     LEX_DFA_Operators2,
     LEX_DFA_Operators3,
