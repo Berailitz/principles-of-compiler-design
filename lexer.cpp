@@ -39,10 +39,29 @@ void TextReader::read_file(const int start_position)
 char TextReader::get_next_char()
 {
     // blanks included, check is_in_retraction
-    char next_char;
+    char current_char, next_char;
     if (!is_in_retraction)
     {
+        if (end_index == 0)
+        {
+            current_char = _buffer[LEXER_BUFFER_SIZE - 1];
+        }
+        else
+        {
+            current_char = _buffer[end_index - 1];
+        }
+        if (current_char == LINE_DELIMITER)
+        {
+            row++;
+            column = 0;
+            cout << endl << "Line " << row << ":" << endl;
+        }
+        else
+        {
+            column++;
+        }
         end_index++;
+        word_counter++;
         if (end_index == LEXER_MID_BUFFER_SIZE)
         {
             read_file(LEXER_MID_BUFFER_SIZE);
@@ -60,19 +79,6 @@ char TextReader::get_next_char()
     else
     {
         next_char = _buffer[end_index - 1];
-    }
-    if (!is_in_retraction)
-    {
-        word_counter++;
-        if (next_char == LINE_DELIMITER)
-        {
-            row++;
-            column = 1;
-        }
-        else
-        {
-            column++;
-        }
     }
     is_in_retraction = false;
     return next_char;
@@ -176,6 +182,7 @@ void Lexer::prase(const string &filename)
 {
     char next_char;
     reader = new TextReader(filename);
+    cout << "Line 1" << endl;
     next_char = reader->get_next_char();
     while (next_char != END_OF_FILE)
     {
@@ -285,6 +292,9 @@ void Lexer::prase(const string &filename)
             else if (next_char == 'x')
             {
                 set_state(LEX_DFA_hexs2);
+            } else if (next_char == '.')
+            {
+                set_state(LEX_DFA_floats2);
             }
             else
             {
@@ -292,7 +302,11 @@ void Lexer::prase(const string &filename)
             }
             break;
         case LEX_DFA_octs2:
-            if (!is_oct(next_char))
+            if (next_char == '.')
+            {
+                set_state(LEX_DFA_floats2);
+            }
+            else if (!is_oct(next_char))
             {
                 receive_token(IntTokenType, true);
             }
@@ -763,8 +777,8 @@ void Lexer::print_stat() const
     {
         cout << TOKEN_NAMES[i] << ": " << token_counter[i] << endl;
     }
-    cout << reader->get_row() << " lines." << endl;
-    cout << reader->get_word_counter() << " characters." << endl;
+    cout << reader->get_row() - 1 << " lines." << endl;
+    cout << reader->get_word_counter() - 1 << " characters." << endl;
     cout << error_counter << " errors." << endl;
 }
 

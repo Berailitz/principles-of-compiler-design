@@ -257,7 +257,7 @@ class TextReader
 
   private:
     int row = 1;
-    int column = 1;
+    int column = 0;
     int word_counter = 0;
     void read_file(const int start_position);
     char *_buffer = new char[LEXER_BUFFER_SIZE];

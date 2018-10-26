@@ -12,6 +12,7 @@ int main(int argc, char const *argv[])
     {
         cout << "Please enter target source filename: ";
         cin >> filename;
+        cin.ignore();
         lexer.prase(filename);
     }
     cout << endl;

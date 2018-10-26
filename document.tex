@@ -180,10 +180,10 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 	identifier1 \rightarrow \varepsilon | letter \ identifier1 | dec \ identifier1
 \end{equation}
 \begin{equation}
-	octs1hexs1dec0 \rightarrow \varepsilon | oct \ octs2 | x \ hexs2
+	octs1hexs1dec0 \rightarrow \varepsilon | . \ floats2 | oct \ octs2 | x \ hexs2
 \end{equation}
 \begin{equation}
-	octs2 \rightarrow \varepsilon | oct \ octs2
+	octs2 \rightarrow \varepsilon | . \ floats2 | oct \ octs2
 \end{equation}
 \begin{equation}
 	hexs2 \rightarrow hex \ hexs3
@@ -302,8 +302,9 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 运行程序后根据提示输入目标文件名，或将目标文件拖拽至词法分析程序的可执行文件上。
 \section{样例使用说明}
 \begin{enumerate}
-	\item 合法源文件样例
-	\item 含错误源文件样例
+	\item 合法源文件
+	将$legal.cpp$文件拖拽至$main.exe$文件上，
+	\item 含错误源文件
 \end{enumerate}
 \section{备注}
 \begin{enumerate}
