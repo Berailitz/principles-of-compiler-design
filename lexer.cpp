@@ -780,7 +780,7 @@ string dump_token(const Token &token)
         text += (", " + to_string(token.second.float_value));
         break;
     case CharTokenType:
-        text += (", " + to_string(token.second.char_value));
+        text += (", " + string(1, token.second.char_value));
         break;
     case StringTokenType:
         break;
