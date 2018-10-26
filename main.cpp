@@ -2,16 +2,10 @@
 
 int main()
 {
-    queue<Token> token_queue;
-    Lexer lexer(token_queue);
-    LexerComsumer comsumer(token_queue);
+    Lexer lexer;
     lexer.prase("test.cpp");
-    cout << "Lexer finished." << endl;
     cout << endl;
-    cout << "Tokens:" << endl;
-    comsumer.run();
-    cout << endl;
-    cout << lexer.get_stat();
+    lexer.print_stat();
     cout << "Press Enter to exit.";
     cin.get();
     return 0;

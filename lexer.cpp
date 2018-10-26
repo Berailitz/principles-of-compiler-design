@@ -143,9 +143,8 @@ int TextReader::get_word_counter() const
     return word_counter;
 }
 
-Lexer::Lexer(queue<Token> &token_queue)
-    : _token_queue(token_queue),
-      identifier_table(new unordered_map<string, int>),
+Lexer::Lexer()
+    : identifier_table(new unordered_map<string, int>),
       token_counter(new int[TOKEN_TYPE_COUNTER])
 {
     fill_n(token_counter, TOKEN_TYPE_COUNTER, 0);
@@ -598,6 +597,7 @@ void Lexer::prase(const string &filename)
         }
         next_char = reader->get_next_char();
     }
+    cout << "Lexer finished." << endl;
 }
 
 void Lexer::receive_token(const TokenType &type, const bool do_retract)
@@ -656,7 +656,7 @@ void Lexer::receive_token(const TokenType &type, const bool do_retract)
         token.second.int_value = get_delimiter_index(text);
         break;
     }
-    _token_queue.push(token);
+    cout << dump_token(token);
     token_counter[type]++;
     set_state(LEX_DFA_languages);
     reader->reset_current_string();
@@ -747,17 +747,16 @@ bool Lexer::is_c_letter(const char next_char) const
     return next_char == '_' || isalpha(next_char);
 }
 
-string Lexer::get_stat() const
+void Lexer::print_stat() const
 {
-    string stat = "Token counters:\n";
+    cout << "Token counters:" << endl;
     for (int i = 0; i < TOKEN_TYPE_COUNTER; i++)
     {
-        stat += (TOKEN_NAMES[i] + ": " + to_string(token_counter[i]) + "\n");
+        cout << TOKEN_NAMES[i] << ": " << token_counter[i] << endl;
     }
-    stat += (to_string(reader->get_row()) + " lines.\n");
-    stat += (to_string(reader->get_word_counter()) + " characters.\n");
-    stat += (to_string(error_counter) + " errors.\n");
-    return stat;
+    cout << reader->get_row() << " lines." << endl;
+    cout << reader->get_word_counter() << " characters." << endl;
+    cout << error_counter << " errors." << endl;
 }
 
 string dump_token(const Token &token)
@@ -788,18 +787,4 @@ string dump_token(const Token &token)
     }
     text += (", `" + token.second.string_value + "`");
     return text + ">" + LINE_DELIMITER;
-}
-
-LexerComsumer::LexerComsumer(queue<Token> &token_queue)
-    : _token_queue(token_queue)
-{
-}
-
-void LexerComsumer::run()
-{
-    while (!_token_queue.empty())
-    {
-        cout << dump_token(_token_queue.front());
-        _token_queue.pop();
-    }
 }

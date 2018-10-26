@@ -7,7 +7,6 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
-#include <queue>
 #include <string>
 #include <unordered_map>
 
@@ -267,17 +266,16 @@ private:
 class Lexer
 {
 public:
-    Lexer(queue<Token> &token_queue);
+    Lexer();
     ~Lexer();
     void prase(const string &filename);
-    string get_stat() const;
+    void print_stat() const;
 private:
     LEX_DFA_STATE _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
     bool is_in_error = false;
     int error_counter = 0;
-    queue<Token> &_token_queue;
     int *token_counter = nullptr;
     void set_state(const LEX_DFA_STATE next_state);
     void raise_error();
@@ -292,14 +290,5 @@ private:
 };
 
 string dump_token(const Token &token);
-
-class LexerComsumer
-{
-public:
-    LexerComsumer(queue<Token> &token_queue);
-    void run();
-private:
-    queue<Token> &_token_queue;
-};
 
 #endif
