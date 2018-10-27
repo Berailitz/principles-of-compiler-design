@@ -306,6 +306,12 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 	将$legal.cpp$文件拖拽至$main.exe$文件上，
 	\item 含错误源文件
 \end{enumerate}
+\section{完成过程中遇到的问题}
+\subsection{程序在$g++$下出现的问题}
+若使用$g++$（版本号：$8.1.0$）编译本程序，程序有可能重复分析部分代码，但若使用$clang++$（版本号：$7.0.0$）或$Visual Studio 2017$编译
+，则不会出现重复分析的问题。此类情况是因为读取源文件使用的$ifstream::read$函数在不同的编译器下行为不同。
+\subsection{中文支持}
+在中文$Windows 10$环境中，控制台默认使用$GB2312$作为默认编码，若源文件不为$GB2312$编码，则词法分析程序的输出可能会出现乱码。
 \section{备注}
 \begin{enumerate}
 	\item 词法来源：编译器$Clang++$上进行的测试（版本号：$3.9.1$）和互联网（$cppreference.com$等）；

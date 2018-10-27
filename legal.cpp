@@ -2,7 +2,7 @@
 #include <string>
 
 /*
-    This is legal source file.
+    合法源文件。
 */
 
 int main(int argc, char const *argv[])
