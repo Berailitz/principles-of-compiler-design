@@ -59,9 +59,9 @@ char TextReader::get_next_char()
         else
         {
             column++;
+            word_counter++;
         }
         end_index++;
-        word_counter++;
         if (end_index == LEXER_MID_BUFFER_SIZE)
         {
             read_file(LEXER_MID_BUFFER_SIZE);
@@ -694,28 +694,31 @@ void Lexer::raise_error()
     {
     case LEX_DFA_hexs2:
         cout << "HEX word excepted, maybe `0`?";
+        cout << " Jump to the next line.>" << endl;
         receive_token(IntTokenType, false);
         break;
     case LEX_DFA_decs2:
         cout << "a digit excepted, maybe `0`?";
+        cout << " Jump to the next line.>" << endl;
         receive_token(IntTokenType, false);
         break;
     case LEX_DFA_floats2:
     case LEX_DFA_floats4:
         cout << "a digit excepted, maybe `0`?";
+        cout << " Jump to the next line.>" << endl;
         receive_token(FloatTokenType, false);
         break;
     case LEX_DFA_chars1:
         cout << "a character excepted, maybe `a`?";
+        cout << " Jump to the next line.>" << endl;
         receive_token(CharTokenType, false);
         break;
     case LEX_DFA_chars3:
         cout << "missing `'` ?";
+        cout << " Jump to the next line.>" << endl;
         receive_token(CharTokenType, false);
         break;
     }
-    cout << endl
-         << "Jump to next line.>" << endl;
     while (next_char != ';')
     {
         next_char = reader->get_next_char();
@@ -777,8 +780,8 @@ void Lexer::print_stat() const
     {
         cout << TOKEN_NAMES[i] << ": " << token_counter[i] << endl;
     }
-    cout << reader->get_row() - 1 << " lines." << endl;
-    cout << reader->get_word_counter() - 1 << " characters." << endl;
+    cout << reader->get_row() << " lines." << endl;
+    cout << reader->get_word_counter() << " characters." << endl;
     cout << error_counter << " errors." << endl;
 }
 

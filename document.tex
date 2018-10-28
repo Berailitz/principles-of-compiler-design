@@ -1,10 +1,11 @@
 \documentclass[UTF8]{ctexart}
     \usepackage{amsmath}
     \usepackage{geometry}
-    \usepackage{url}
+	\usepackage{url}
+	\usepackage{verbatim}
 
     \title{词法分析程序说明文档}
-    \author{熊光正}
+    \author{2016211305班 \ 熊光正 （学号：2016211249）}
     \date{\today}
 \begin{document}
 \maketitle
@@ -298,20 +299,298 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 本程序可以统计并输出源文件的行数和字符总数。
 \subsection{错误处理}
 本程序可以识别源文件中出现的词法错误，报告其所在行数、列数，并继续分析后面的源代码。对于字符型中缺失后单引号，词法处理程序可以自动纠正。
-\section{程序使用说明}
+\section{运行流程}
+根据需求分批读取字符至缓冲区，依次分析并形成符号串，对标识符建立符号表，同时统计行数、字符串、符号数和错误数。
+若出现自动机无法识别的字符，尝试进行纠正并继续运行至文件尾。
+\section{使用说明}
 运行程序后根据提示输入目标文件名，或将目标文件拖拽至词法分析程序的可执行文件上。
 \section{样例使用说明}
-\begin{enumerate}
-	\item 合法源文件
-	将$legal.cpp$文件拖拽至$main.exe$文件上，
-	\item 含错误源文件
-\end{enumerate}
+\subsection{合法源文件}
+合法源文件示例
+\begin{verbatim}
+#include <iostream>
+#include <string>
+
+/*
+    合法源文件。
+*/
+
+int main(int argc, char const *argv[])
+{
+    const int a = ~0, b=11;
+    double d = 0.3e2 + i;
+    int j = 0xa1, k = 011;
+    char c = '\'';
+    std::string s = "string value\n";
+    std::cout << s;
+    return 0;
+}
+\end{verbatim}
+将$legal.cpp$文件拖拽至$main.exe$文件上，输出
+\begin{verbatim}
+Line 1
+<EmptyToken, 1, `#include <iostream>`>
+
+Line 2:
+<EmptyToken, 1, `#include <string>`>
+
+Line 3:
+
+Line 4:
+
+Line 5:
+
+Line 6:
+<EmptyToken, 1, `/*
+    合法源文件。
+*/`>
+
+Line 7:
+
+Line 8:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 0, `main`>
+<DelimiterToken, 0, `(`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 1, `argc`>
+<DelimiterToken, 6, `,`>
+<KeywordToken, 12, `char`>
+<KeywordToken, 18, `const`>
+<BinaryOperatorToken, 9, `*`>
+<IdentifierToken, 2, `argv`>
+<DelimiterToken, 2, `[`>
+<DelimiterToken, 3, `]`>
+<DelimiterToken, 1, `)`>
+
+Line 9:
+<DelimiterToken, 4, `{`>
+
+Line 10:
+<KeywordToken, 18, `const`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 3, `a`>
+<BinaryOperatorToken, 14, `=`>
+<UnaryOperatorToken, 3, `~`>
+<IntToken, 0, `0`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 4, `b`>
+<BinaryOperatorToken, 14, `=`>
+<IntToken, 11, `11`>
+<DelimiterToken, 7, `;`>
+
+Line 11:
+<KeywordToken, 26, `double`>
+<IdentifierToken, 5, `d`>
+<BinaryOperatorToken, 14, `=`>
+<FloatToken, 30.000000, `0.3e2`>
+<BinaryOperatorToken, 7, `+`>
+<IdentifierToken, 6, `i`>
+<DelimiterToken, 7, `;`>
+
+Line 12:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 7, `j`>
+<BinaryOperatorToken, 14, `=`>
+<IntToken, 0, `0xa1`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 8, `k`>
+<BinaryOperatorToken, 14, `=`>
+<IntToken, 11, `011`>
+<DelimiterToken, 7, `;`>
+
+Line 13:
+<KeywordToken, 12, `char`>
+<IdentifierToken, 9, `c`>
+<BinaryOperatorToken, 14, `=`>
+<CharToken, \, `'\''`>
+<DelimiterToken, 7, `;`>
+
+Line 14:
+<IdentifierToken, 10, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 11, `string`>
+<IdentifierToken, 12, `s`>
+<BinaryOperatorToken, 14, `=`>
+<StringToken, `"string value\n"`>
+<DelimiterToken, 7, `;`>
+
+Line 15:
+<IdentifierToken, 10, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 13, `cout`>
+<BinaryOperatorToken, 5, `<<`>
+<IdentifierToken, 12, `s`>
+<DelimiterToken, 7, `;`>
+
+Line 16:
+<KeywordToken, 58, `return`>
+<IntToken, 0, `0`>
+<DelimiterToken, 7, `;`>
+
+Line 17:
+<DelimiterToken, 5, `}`>
+
+Line 18:
+Lexer finished.
+
+Token counters:
+EmptyToken: 3
+IdentifierToken: 26
+KeywordToken: 0
+IntToken: 5
+FloatToken: 1
+CharToken: 1
+StringToken: 1
+UnaryOperatorToken: 1
+BinaryOperatorToken: 12
+TernaryOperatorToken: 0
+DelimiterToken: 16
+18 lines.
+262 characters.
+0 errors.
+
+Press Enter to exit.
+\end{verbatim}
+词法分析程序分析出了所有合法的符号，建立了标识符表，并得到了行数、符号数与错误数。
+\subsection{含错误源文件}
+含错误源文件示例
+\begin{verbatim}
+#include <iostream>
+#include <string>
+
+/*
+    含错误源文件。
+*/
+
+int main(int argc, char const *argv[])
+{
+    const int i = ~0., b = 11;
+    double d = 0.3e2 + i;
+    int j = 0xz1, k = 011;
+    char c = '\';
+    std::string s = "string value\n";
+    std::cout << s;
+    return 0;
+}
+\end{verbatim}
+将$illegal.cpp$文件拖拽至$main.exe$文件上，输出
+\begin{verbatim}
+Line 1
+<EmptyToken, 1, `#include <iostream>`>
+
+Line 2:
+<EmptyToken, 1, `#include <string>`>
+
+Line 3:
+
+Line 4:
+
+Line 5:
+
+Line 6:
+<EmptyToken, 1, `/*
+    含错误源文件。
+*/`>
+
+Line 7:
+
+Line 8:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 0, `main`>
+<DelimiterToken, 0, `(`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 1, `argc`>
+<DelimiterToken, 6, `,`>
+<KeywordToken, 12, `char`>
+<KeywordToken, 18, `const`>
+<BinaryOperatorToken, 9, `*`>
+<IdentifierToken, 2, `argv`>
+<DelimiterToken, 2, `[`>
+<DelimiterToken, 3, `]`>
+<DelimiterToken, 1, `)`>
+
+Line 9:
+<DelimiterToken, 4, `{`>
+
+Line 10:
+<KeywordToken, 18, `const`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 3, `i`>
+<BinaryOperatorToken, 14, `=`>
+<UnaryOperatorToken, 3, `~`>
+<ERROR at (10, 22): a digit excepted, maybe `0`? Jump to the next line.>
+<FloatToken, 0.000000, `0., `>
+
+Line 11:
+<KeywordToken, 26, `double`>
+<IdentifierToken, 4, `d`>
+<BinaryOperatorToken, 14, `=`>
+<FloatToken, 0.000000, `0.3e2`>
+<BinaryOperatorToken, 7, `+`>
+<IdentifierToken, 3, `i`>
+<DelimiterToken, 7, `;`>
+
+Line 12:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 5, `j`>
+<BinaryOperatorToken, 14, `=`>
+<ERROR at (12, 15): HEX word excepted, maybe `0`? Jump to the next line.>
+<IntToken, 0, `0xz1`>
+
+Line 13:
+<KeywordToken, 12, `char`>
+<IdentifierToken, 6, `c`>
+<BinaryOperatorToken, 14, `=`>
+<ERROR at (13, 17): missing `'` ? Jump to the next line.>
+<CharToken, \, `'\';
+`>
+
+Line 14:
+
+Line 15:
+<IdentifierToken, 7, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 8, `cout`>
+<BinaryOperatorToken, 5, `<<`>
+<IdentifierToken, 9, `s`>
+<DelimiterToken, 7, `;`>
+
+Line 16:
+<KeywordToken, 58, `return`>
+<IntToken, 0, `0`>
+<DelimiterToken, 7, `;`>
+
+Line 17:
+<DelimiterToken, 5, `}`>
+
+Line 18:
+Lexer finished.
+
+Token counters:
+EmptyToken: 3
+IdentifierToken: 21
+KeywordToken: 0
+IntToken: 2
+FloatToken: 2
+CharToken: 1
+StringToken: 0
+UnaryOperatorToken: 1
+BinaryOperatorToken: 8
+TernaryOperatorToken: 0
+DelimiterToken: 10
+18 lines.
+266 characters.
+3 errors.
+
+Press Enter to exit.
+  \end{verbatim}
+词法分析程序分析出了所有合法的符号，并找到了第$10$、$12$和$13$行的错误，尝试修正并继续运行至文件末尾，输出错误数$3$。
 \section{完成过程中遇到的问题}
 \subsection{程序在$g++$下出现的问题}
 若使用$g++$（版本号：$8.1.0$）编译本程序，程序有可能重复分析部分代码，但若使用$clang++$（版本号：$7.0.0$）或$Visual Studio 2017$编译
 ，则不会出现重复分析的问题。此类情况是因为读取源文件使用的$ifstream::read$函数在不同的编译器下行为不同。
-\subsection{中文支持}
-在中文$Windows 10$环境中，控制台默认使用$GB2312$作为默认编码，若源文件不为$GB2312$编码，则词法分析程序的输出可能会出现乱码。
+\subsection{分析含中文字符的源代码}
+在中文$Windows \ 10$环境中，控制台默认使用$GB2312$作为默认编码，若源文件不为$GB2312$编码，则词法分析程序的输出可能会出现乱码。
 \section{备注}
 \begin{enumerate}
 	\item 词法来源：编译器$Clang++$上进行的测试（版本号：$3.9.1$）和互联网（$cppreference.com$等）；
