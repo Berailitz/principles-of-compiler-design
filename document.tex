@@ -317,8 +317,8 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 
 int main(int argc, char const *argv[])
 {
-    const int a = ~0, b=11;
-    double d = 0.3e2 + i;
+    const int _a = ~0, B_=11;
+    double d2 = 0.3e2 + _a;
     int j = 0xa1, k = 011;
     char c = '\'';
     std::string s = "string value\n";
@@ -368,58 +368,58 @@ Line 9:
 Line 10:
 <KeywordToken, 18, `const`>
 <KeywordToken, 40, `int`>
-<IdentifierToken, 3, `a`>
+<IdentifierToken, 3, `_a`>
 <BinaryOperatorToken, 14, `=`>
 <UnaryOperatorToken, 3, `~`>
 <IntToken, 0, `0`>
 <DelimiterToken, 6, `,`>
-<IdentifierToken, 4, `b`>
+<IdentifierToken, 4, `B_`>
 <BinaryOperatorToken, 14, `=`>
 <IntToken, 11, `11`>
 <DelimiterToken, 7, `;`>
 
 Line 11:
 <KeywordToken, 26, `double`>
-<IdentifierToken, 5, `d`>
+<IdentifierToken, 5, `d2`>
 <BinaryOperatorToken, 14, `=`>
 <FloatToken, 30.000000, `0.3e2`>
 <BinaryOperatorToken, 7, `+`>
-<IdentifierToken, 6, `i`>
+<IdentifierToken, 3, `_a`>
 <DelimiterToken, 7, `;`>
 
 Line 12:
 <KeywordToken, 40, `int`>
-<IdentifierToken, 7, `j`>
+<IdentifierToken, 6, `j`>
 <BinaryOperatorToken, 14, `=`>
 <IntToken, 0, `0xa1`>
 <DelimiterToken, 6, `,`>
-<IdentifierToken, 8, `k`>
+<IdentifierToken, 7, `k`>
 <BinaryOperatorToken, 14, `=`>
 <IntToken, 11, `011`>
 <DelimiterToken, 7, `;`>
 
 Line 13:
 <KeywordToken, 12, `char`>
-<IdentifierToken, 9, `c`>
+<IdentifierToken, 8, `c`>
 <BinaryOperatorToken, 14, `=`>
 <CharToken, \, `'\''`>
 <DelimiterToken, 7, `;`>
 
 Line 14:
-<IdentifierToken, 10, `std`>
+<IdentifierToken, 9, `std`>
 <BinaryOperatorToken, 12, `::`>
-<IdentifierToken, 11, `string`>
-<IdentifierToken, 12, `s`>
+<IdentifierToken, 10, `string`>
+<IdentifierToken, 11, `s`>
 <BinaryOperatorToken, 14, `=`>
 <StringToken, `"string value\n"`>
 <DelimiterToken, 7, `;`>
 
 Line 15:
-<IdentifierToken, 10, `std`>
+<IdentifierToken, 9, `std`>
 <BinaryOperatorToken, 12, `::`>
-<IdentifierToken, 13, `cout`>
+<IdentifierToken, 12, `cout`>
 <BinaryOperatorToken, 5, `<<`>
-<IdentifierToken, 12, `s`>
+<IdentifierToken, 11, `s`>
 <DelimiterToken, 7, `;`>
 
 Line 16:
@@ -446,7 +446,7 @@ BinaryOperatorToken: 12
 TernaryOperatorToken: 0
 DelimiterToken: 16
 18 lines.
-262 characters.
+266 characters.
 0 errors.
 
 Press Enter to exit.
@@ -464,8 +464,8 @@ Press Enter to exit.
 
 int main(int argc, char const *argv[])
 {
-    const int i = ~0., b = 11;
-    double d = 0.3e2 + i;
+    const int _a = ~0., B_ = 11;
+    double d2 = 0.3e2 + _a;
     int j = 0xz1, k = 011;
     char c = '\';
     std::string s = "string value\n";
@@ -515,19 +515,19 @@ Line 9:
 Line 10:
 <KeywordToken, 18, `const`>
 <KeywordToken, 40, `int`>
-<IdentifierToken, 3, `i`>
+<IdentifierToken, 3, `_a`>
 <BinaryOperatorToken, 14, `=`>
 <UnaryOperatorToken, 3, `~`>
-<ERROR at (10, 22): a digit excepted, maybe `0`? Jump to the next line.>
+<ERROR at (10, 23): a digit excepted, maybe `0`? Jump to the next line.>
 <FloatToken, 0.000000, `0., `>
 
 Line 11:
 <KeywordToken, 26, `double`>
-<IdentifierToken, 4, `d`>
+<IdentifierToken, 4, `d2`>
 <BinaryOperatorToken, 14, `=`>
 <FloatToken, 0.000000, `0.3e2`>
 <BinaryOperatorToken, 7, `+`>
-<IdentifierToken, 3, `i`>
+<IdentifierToken, 3, `_a`>
 <DelimiterToken, 7, `;`>
 
 Line 12:
@@ -579,7 +579,7 @@ BinaryOperatorToken: 8
 TernaryOperatorToken: 0
 DelimiterToken: 10
 18 lines.
-266 characters.
+270 characters.
 3 errors.
 
 Press Enter to exit.
