@@ -1,6 +1,9 @@
+%!TEX program = xelatex
 \documentclass[UTF8]{ctexart}
     \usepackage{amsmath}
     \usepackage{geometry}
+	\usepackage[utf8]{inputenc}
+	\usepackage{listings}
 	\usepackage{url}
 	\usepackage{verbatim}
 
@@ -8,6 +11,7 @@
     \author{2016211305班 \ 熊光正 （学号：2016211249）}
     \date{\today}
 \begin{document}
+\lstset{numbers=left,frame=single}
 \maketitle
 \tableofcontents
 \section{符号说明}
@@ -38,7 +42,7 @@
 	\item $identifier$: 标识符；
 \end{enumerate}
 注：为便于识别，必要时，我们使用空格分隔正则表达式中的各个符号。
-\section{文法的推导}
+\section{文法的推导与设计}
 \subsection{关键字和标识符}
 考虑到关键字和标识符均服从正则表达式$letter (letter|ddec|\_)^*$，我们先将其视为同一类型的符号，识别出再进行分类
 ，其文法为:
@@ -60,8 +64,9 @@ $$ decs = 0 | dec1 \ dec+((E|e)(+|-)?dec+)? $$
 其文法为
 $$ decs \rightarrow dec1 \ decs1  $$
 $$ decs1 \rightarrow \varepsilon | dec \ decs1 | E \ decs2 | e \ decs2 $$
-$$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3  $$
-$$ decs3 \rightarrow \varepsilon | dec \ decs3  $$
+$$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs4  $$
+$$ decs3 \rightarrow dec \ decs4  $$
+$$ decs4 \rightarrow \varepsilon | dec \ decs4  $$
 \subsubsection{$16$进制整数}
 以$0x$开始，由$hex$组成，且长度不小于$3$，即
 $$ hexs = 0 \ x  \ {hex}^+ $$
@@ -78,8 +83,9 @@ $$ octs2 \rightarrow \varepsilon | oct \ octs2 $$
 $$ hexs2 \rightarrow hex \ hexs3 $$
 $$ hexs3 \rightarrow \varepsilon | hex \ hexs3 $$
 $$ decs1 \rightarrow \varepsilon | dec \ decs1 | E \ decs2 | e \ decs2 $$
-$$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3  $$
-$$ decs3 \rightarrow \varepsilon | dec \ decs3  $$
+$$ decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs4  $$
+$$ decs3 \rightarrow dec \ decs4  $$
+$$ decs4 \rightarrow \varepsilon | dec \ decs4  $$
 依据上述文法识别到整型后，我们通过$atoi$函数将其转换为整数。
 \subsection{浮点数}
 对于非科学记数法表示的浮点数，其小数点前、后的部分可分别视为一个$10$进制整数；对于科学记数法表示的浮点数，
@@ -90,8 +96,9 @@ $$ floats \rightarrow dec1 \ floats1 $$
 $$ floats1 \rightarrow dec \ floats1 | . \ floats2 $$
 $$ floats2 \rightarrow dec \ floats3 $$
 $$ floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4 $$
-$$ floats4 \rightarrow dec \ floats5 $$
-$$ floats5 \rightarrow \varepsilon | dec \ floats5 $$
+$$ floats4 \rightarrow + \ floats5 | - \ floats5 | dec \ floats6 $$
+$$ floats5 \rightarrow dec \ floats6 $$
+$$ floats6 \rightarrow \varepsilon | dec \ floats6 $$
 依据上述文法识别到浮点型后，我们通过$atof$函数将其转换为浮点数
 \subsection{（单个）字符}
 由单引号、非单引号字符、单引号组成，其正则式为
@@ -196,10 +203,13 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 	decs1floats1 \rightarrow \varepsilon | dec \ decs1floats1 | E \ decs2 | e \ decs2 | . \ floats2
 \end{equation}
 \begin{equation}
-	decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs3
+	decs2 \rightarrow + \ decs3 | - \ decs3 | dec \ decs4
 \end{equation}
 \begin{equation}
-	decs3 \rightarrow \varepsilon | dec \ decs3
+	decs3 \rightarrow dec \ decs4
+\end{equation}
+\begin{equation}
+	decs4 \rightarrow \varepsilon | dec \ decs4
 \end{equation}
 \begin{equation}
 	floats2 \rightarrow dec \ floats3
@@ -208,10 +218,13 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 	floats3 \rightarrow \varepsilon | dec \ floats3 | e \ floats4 | E \ floats4
 \end{equation}
 \begin{equation}
-	floats4 \rightarrow dec \ floats5
+	floats4 \rightarrow + \ floats5 | - \ floats5 | dec \ floats6
 \end{equation}
 \begin{equation}
-	floats5 \rightarrow \varepsilon | dec \ floats5
+	floats5 \rightarrow dec \ floats6
+\end{equation}
+\begin{equation}
+	floats6 \rightarrow \varepsilon | dec \ floats6
 \end{equation}
 \begin{equation}
 	chars1 \rightarrow \backslash \ chars2 | charNoSqBs \ chars3
@@ -291,6 +304,18 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 \begin{equation}
 	Operators15 \rightarrow \varepsilon | \colon
 \end{equation}
+\section{开发环境}
+本程序使用$Visual \ Studio \ Code$编辑器，在基于$x86_64$指令集的$64$位中文$Windows \ 10$环境下开发。
+程序使用$Clang++$（版本号：$7.0.0$）编译器，基于$c++14$标准和$MSVC$环境进行静态编译。
+\section{运行环境}
+本程序支持在$64$位中文$Windows \ 10$环境下运行，没有其他运行时依赖。
+\section{功能实现}
+程序定义了$TokenValueUnion$类以记录符号的数据，定义了$TokenType$枚举以表述符号的类型，
+并使用$std::pair<TokenType, TokenValueUnion>$表示符号的类型和对应的数据。
+程序定义了$TextReader$类以建立、管理缓冲区，统计相关信息，并抽象化文件的读取。
+程序使用$std::unordered_map$定义了关键字、运算符和界符，并构建了符号表。
+程序定义了$Lexer$类以完成词法分析的功能，其中，$void Lexer::prase(const string \&filename)$函数执行从文件中分析词法的功能。
+依据前文推到的文法，该函数中的自动机依次比对各个字符以识别符号，并处理错误。
 \section{程序功能}
 \subsection{识别合法符号及注释}
 依据上述文本，本程序可以识别科学记数法或非科学记数法表示的$8$、$10$、$16$进制的无符号整数和浮点数、带转义或不带转义的单个字符或字符串
@@ -305,49 +330,38 @@ $$ commentOfMacros1 \rightarrow \backslash n | charNoBl \ commentOfMacros1 $$
 \section{使用说明}
 运行程序后根据提示输入目标文件名，或将目标文件拖拽至词法分析程序的可执行文件上。
 \section{样例使用说明}
-\subsection{合法源文件}
-合法源文件示例
-\begin{verbatim}
-#include <iostream>
-#include <string>
-
+\subsection{合法源文件样例}
+\subsubsection{基础测试样例：$legal\_1.cpp$}
+本样例测试标识符、科学记数法或非科学记数法表示的$10$进制整数、浮点数、基本运算符和界符的识别及注释的处理等基本要求，源代码中不含词法错误。
+\begin{lstlisting}[language={C++}]
 /*
-    合法源文件。
+    基础测试样例
 */
 
 int main(int argc, char const *argv[])
 {
-    const int _a = ~0, B_=11;
-    double d2 = 0.3e2 + _a;
-    int j = 0xa1, k = 011;
-    char c = '\'';
-    std::string s = "string value\n";
-    std::cout << s;
-    return 0;
+    const int _a_1 = 0, B__c__2 = 11E4;
+    double d25sd5r6tf7gy890jn = 0.3e-2;
+    float d = -0.01;
+    d25sd5r6tf7gy890jn -= (_a_1 - B__c__2 * (d / _a_1));
+    d += (_a_1 % B__c__2);
+    return --d;
 }
-\end{verbatim}
-将$legal.cpp$文件拖拽至$main.exe$文件上，输出
-\begin{verbatim}
+\end{lstlisting}
+将$legal\_1.cpp$文件拖拽至$main.exe$文件上，分析输出
+\begin{lstlisting}
 Line 1
-<EmptyToken, 1, `#include <iostream>`>
 
 Line 2:
-<EmptyToken, 1, `#include <string>`>
 
 Line 3:
+<EmptyToken, 1, `*
+    基础测试样例
+*`>
 
 Line 4:
 
 Line 5:
-
-Line 6:
-<EmptyToken, 1, `/*
-    合法源文件。
-*/`>
-
-Line 7:
-
-Line 8:
 <KeywordToken, 40, `int`>
 <IdentifierToken, 0, `main`>
 <DelimiterToken, 0, `(`>
@@ -362,104 +376,522 @@ Line 8:
 <DelimiterToken, 3, `]`>
 <DelimiterToken, 1, `)`>
 
-Line 9:
+Line 6:
 <DelimiterToken, 4, `{`>
 
-Line 10:
+Line 7:
 <KeywordToken, 18, `const`>
 <KeywordToken, 40, `int`>
-<IdentifierToken, 3, `_a`>
+<IdentifierToken, 3, `_a_1`>
 <BinaryOperatorToken, 14, `=`>
-<UnaryOperatorToken, 3, `~`>
 <IntToken, 0, `0`>
 <DelimiterToken, 6, `,`>
-<IdentifierToken, 4, `B_`>
+<IdentifierToken, 4, `B__c__2`>
 <BinaryOperatorToken, 14, `=`>
-<IntToken, 11, `11`>
+<IntToken, 11, `11E4`>
+<DelimiterToken, 7, `;`>
+
+Line 8:
+<KeywordToken, 26, `double`>
+<IdentifierToken, 5, `d25sd5r6tf7gy890jn`>
+<BinaryOperatorToken, 14, `=`>
+<FloatToken, 0.003000, `0.3e-2`>
+<DelimiterToken, 7, `;`>
+
+Line 9:
+<KeywordToken, 34, `float`>
+<IdentifierToken, 6, `d`>
+<BinaryOperatorToken, 14, `=`>
+<BinaryOperatorToken, 8, `-`>
+<FloatToken, 0.010000, `0.01`>
+<DelimiterToken, 7, `;`>
+
+Line 10:
+<IdentifierToken, 5, `d25sd5r6tf7gy890jn`>
+<BinaryOperatorToken, 18, `-=`>
+<DelimiterToken, 0, `(`>
+<IdentifierToken, 3, `_a_1`>
+<BinaryOperatorToken, 8, `-`>
+<IdentifierToken, 4, `B__c__2`>
+<BinaryOperatorToken, 9, `*`>
+<DelimiterToken, 0, `(`>
+<IdentifierToken, 6, `d`>
+<BinaryOperatorToken, 10, `/`>
+<IdentifierToken, 3, `_a_1`>
+<DelimiterToken, 1, `)`>
+<DelimiterToken, 1, `)`>
 <DelimiterToken, 7, `;`>
 
 Line 11:
-<KeywordToken, 26, `double`>
-<IdentifierToken, 5, `d2`>
-<BinaryOperatorToken, 14, `=`>
-<FloatToken, 30.000000, `0.3e2`>
-<BinaryOperatorToken, 7, `+`>
-<IdentifierToken, 3, `_a`>
+<IdentifierToken, 6, `d`>
+<BinaryOperatorToken, 17, `+=`>
+<DelimiterToken, 0, `(`>
+<IdentifierToken, 3, `_a_1`>
+<BinaryOperatorToken, 13, `%`>
+<IdentifierToken, 4, `B__c__2`>
+<DelimiterToken, 1, `)`>
 <DelimiterToken, 7, `;`>
 
 Line 12:
-<KeywordToken, 40, `int`>
-<IdentifierToken, 6, `j`>
-<BinaryOperatorToken, 14, `=`>
-<IntToken, 0, `0xa1`>
-<DelimiterToken, 6, `,`>
-<IdentifierToken, 7, `k`>
-<BinaryOperatorToken, 14, `=`>
-<IntToken, 11, `011`>
+<KeywordToken, 58, `return`>
+<UnaryOperatorToken, 34, `--`>
+<IdentifierToken, 6, `d`>
 <DelimiterToken, 7, `;`>
 
 Line 13:
-<KeywordToken, 12, `char`>
-<IdentifierToken, 8, `c`>
-<BinaryOperatorToken, 14, `=`>
-<CharToken, \, `'\''`>
-<DelimiterToken, 7, `;`>
+<DelimiterToken, 5, `}`>
 
 Line 14:
-<IdentifierToken, 9, `std`>
-<BinaryOperatorToken, 12, `::`>
-<IdentifierToken, 10, `string`>
-<IdentifierToken, 11, `s`>
+Lexer finished.
+
+Token counters:
+EmptyToken: 1
+IdentifierToken: 25
+KeywordToken: 0
+IntToken: 2
+FloatToken: 2
+CharToken: 0
+StringToken: 0
+UnaryOperatorToken: 1
+BinaryOperatorToken: 12
+TernaryOperatorToken: 0
+DelimiterToken: 20
+14 lines.
+256 characters.
+0 errors.
+
+Press Enter to exit.
+\end{lstlisting}
+词法分析程序分析出了所有合法的符号，包括标识符、科学记数法或非科学记数法表示的$10$进制整数、浮点数、基本运算符和界符，并得到了行数、符号数与错误数。
+
+\subsubsection{延伸测试样例-多进制整数：$legal\_2.cpp$}
+本样例测试$8$进制、$16$进制整数的识别等延伸特性，源代码中不含词法错误。
+\begin{lstlisting}
+/*
+    延伸测试样例-多进制整数
+*/
+
+int main(int argc, char const *argv[])
+{
+    int a = 012, b = 0x12;
+    const int c = 012e2, d = 0x12E3;
+    a += 0x12E-3;
+    a -= 012E-4;
+    return 0;
+}
+\end{lstlisting}
+将$legal\_2.cpp$文件拖拽至$main.exe$文件上，分析输出
+\begin{lstlisting}
+Line 1
+
+Line 2:
+
+Line 3:
+<EmptyToken, 1, `*
+    延伸测试样例-多进制整数
+*`>
+
+Line 4:
+
+Line 5:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 0, `main`>
+<DelimiterToken, 0, `(`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 1, `argc`>
+<DelimiterToken, 6, `,`>
+<KeywordToken, 12, `char`>
+<KeywordToken, 18, `const`>
+<BinaryOperatorToken, 9, `*`>
+<IdentifierToken, 2, `argv`>
+<DelimiterToken, 2, `[`>
+<DelimiterToken, 3, `]`>
+<DelimiterToken, 1, `)`>
+
+Line 6:
+<DelimiterToken, 4, `{`>
+
+Line 7:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 3, `a`>
 <BinaryOperatorToken, 14, `=`>
-<StringToken, `"string value\n"`>
+<IntToken, 12, `012`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 4, `b`>
+<BinaryOperatorToken, 14, `=`>
+<IntToken, 0, `0x12`>
 <DelimiterToken, 7, `;`>
 
-Line 15:
-<IdentifierToken, 9, `std`>
-<BinaryOperatorToken, 12, `::`>
-<IdentifierToken, 12, `cout`>
-<BinaryOperatorToken, 5, `<<`>
-<IdentifierToken, 11, `s`>
+Line 8:
+<KeywordToken, 18, `const`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 5, `c`>
+<BinaryOperatorToken, 14, `=`>
+<IntToken, 12, `012`>
+<IdentifierToken, 6, `e2`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 7, `d`>
+<BinaryOperatorToken, 14, `=`>
+<IntToken, 0, `0x12E3`>
 <DelimiterToken, 7, `;`>
 
-Line 16:
+Line 9:
+<IdentifierToken, 3, `a`>
+<BinaryOperatorToken, 17, `+=`>
+<IntToken, 0, `0x12E`>
+<BinaryOperatorToken, 8, `-`>
+<IntToken, 3, `3`>
+<DelimiterToken, 7, `;`>
+
+Line 10:
+<IdentifierToken, 3, `a`>
+<BinaryOperatorToken, 18, `-=`>
+<IntToken, 12, `012`>
+<IdentifierToken, 8, `E`>
+<BinaryOperatorToken, 8, `-`>
+<IntToken, 4, `4`>
+<DelimiterToken, 7, `;`>
+
+Line 11:
 <KeywordToken, 58, `return`>
 <IntToken, 0, `0`>
 <DelimiterToken, 7, `;`>
 
-Line 17:
+Line 12:
 <DelimiterToken, 5, `}`>
 
-Line 18:
+Line 13:
 Lexer finished.
 
 Token counters:
-EmptyToken: 3
-IdentifierToken: 26
+EmptyToken: 1
+IdentifierToken: 19
 KeywordToken: 0
-IntToken: 5
-FloatToken: 1
-CharToken: 1
-StringToken: 1
-UnaryOperatorToken: 1
-BinaryOperatorToken: 12
+IntToken: 9
+FloatToken: 0
+CharToken: 0
+StringToken: 0
+UnaryOperatorToken: 0
+BinaryOperatorToken: 9
 TernaryOperatorToken: 0
-DelimiterToken: 16
-18 lines.
-266 characters.
+DelimiterToken: 14
+13 lines.
+180 characters.
 0 errors.
 
 Press Enter to exit.
-\end{verbatim}
-词法分析程序分析出了所有合法的符号，建立了标识符表，并得到了行数、符号数与错误数。
-\subsection{含错误源文件}
-含错误源文件示例
-\begin{verbatim}
+\end{lstlisting}
+程序完整无误地识别出了所有$8$进制、$16$进制整数，并输出了统计信息。
+\subsubsection{延伸测试样例-字符和字符串：$legal\_3.cpp$}
+本样例测试含转义字符和不含转义字符的字符和字符串的识别等延伸特性，源代码中不含词法错误。
+\begin{lstlisting}
+#include <string>
+
+/*
+    延伸测试样例-字符和字符串
+*/
+
+int main(int argc, char const *argv[])
+{
+    char a = '1', b = '\'';
+    std::string s = "string value\n", ss = "67gi8gb_+@#$%s^&*(oimk";
+    return 0;
+}
+\end{lstlisting}
+将$legal\_3.cpp$文件拖拽至$main.exe$文件上，分析输出
+\begin{lstlisting}
+Line 1
+<EmptyToken, 1, `include <string`>
+
+Line 2:
+
+Line 3:
+
+Line 4:
+
+Line 5:
+<EmptyToken, 1, `*
+    寤朵几娴嬭瘯鏍蜂緥-瀛楃鍜屽瓧绗︿覆
+*`>
+
+Line 6:
+
+Line 7:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 0, `main`>
+<DelimiterToken, 0, `(`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 1, `argc`>
+<DelimiterToken, 6, `,`>
+<KeywordToken, 12, `char`>
+<KeywordToken, 18, `const`>
+<BinaryOperatorToken, 9, `*`>
+<IdentifierToken, 2, `argv`>
+<DelimiterToken, 2, `[`>
+<DelimiterToken, 3, `]`>
+<DelimiterToken, 1, `)`>
+
+Line 8:
+<DelimiterToken, 4, `{`>
+
+Line 9:
+<KeywordToken, 12, `char`>
+<IdentifierToken, 3, `a`>
+<BinaryOperatorToken, 14, `=`>
+<CharToken, 1, `1`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 4, `b`>
+<BinaryOperatorToken, 14, `=`>
+<CharToken, \, `\'`>
+<DelimiterToken, 7, `;`>
+
+Line 10:
+<IdentifierToken, 5, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 6, `string`>
+<IdentifierToken, 7, `s`>
+<BinaryOperatorToken, 14, `=`>
+<StringToken, `string value\n`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 8, `ss`>
+<BinaryOperatorToken, 14, `=`>
+<StringToken, `67gi8gb_+@#$%s^&*(oimk`>
+<DelimiterToken, 7, `;`>
+
+Line 11:
+<KeywordToken, 58, `return`>
+<IntToken, 0, `0`>
+<DelimiterToken, 7, `;`>
+
+Line 12:
+<DelimiterToken, 5, `}`>
+
+Line 13:
+Lexer finished.
+
+Token counters:
+EmptyToken: 2
+IdentifierToken: 15
+KeywordToken: 0
+IntToken: 1
+FloatToken: 0
+CharToken: 2
+StringToken: 2
+UnaryOperatorToken: 0
+BinaryOperatorToken: 6
+TernaryOperatorToken: 0
+DelimiterToken: 12
+13 lines.
+211 characters.
+0 errors.
+
+Press Enter to exit.
+\end{lstlisting}
+程序完整无误地识别出了所有含转义字符和不含转义字符的字符和字符串，并输出了统计信息。
+\subsubsection{延伸测试样例-高级运算符及符号表：$legal\_4.cpp$}
+本样例测试流操作等高级运算符的识别、符号表的建立和使用等延伸特性，源代码中不含词法错误。
+\begin{lstlisting}
 #include <iostream>
 #include <string>
 
 /*
-    含错误源文件。
+    延伸测试样例-高级运算符及符号表
+*/
+
+class A
+{
+public:
+    A();
+    int s;
+};
+
+int main(int argc, char const *argv[])
+{
+    A aa;
+    char a = '1', b = '\'';
+    std::string s1 = "string value\n", s2 = "67gi8gb_+@#$%s^&*(oimk";
+    std::cout << s1;
+    std::cin >> s2;
+    aa.s = (~2 | 4);
+    a %= (&aa)->s;
+    return 0;
+}
+\end{lstlisting}
+将$legal\_4.cpp$文件拖拽至$main.exe$文件上，分析输出
+\begin{lstlisting}
+Line 1
+<EmptyToken, 1, `include <iostream`>
+
+Line 2:
+<EmptyToken, 1, `include <string`>
+
+Line 3:
+
+Line 4:
+
+Line 5:
+
+Line 6:
+<EmptyToken, 1, `*
+    延伸测试样例-高级运算符及符号表
+*`>
+
+Line 7:
+
+Line 8:
+<KeywordToken, 15, `class`>
+<IdentifierToken, 0, `A`>
+
+Line 9:
+<DelimiterToken, 4, `{`>
+
+Line 10:
+<KeywordToken, 54, `public`>
+<BinaryOperatorToken, 38, `:`>
+
+Line 11:
+<IdentifierToken, 0, `A`>
+<DelimiterToken, 0, `(`>
+<DelimiterToken, 1, `)`>
+<DelimiterToken, 7, `;`>
+
+Line 12:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 1, `s`>
+<DelimiterToken, 7, `;`>
+
+Line 13:
+<DelimiterToken, 5, `}`>
+<DelimiterToken, 7, `;`>
+
+Line 14:
+
+Line 15:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 2, `main`>
+<DelimiterToken, 0, `(`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 3, `argc`>
+<DelimiterToken, 6, `,`>
+<KeywordToken, 12, `char`>
+<KeywordToken, 18, `const`>
+<BinaryOperatorToken, 9, `*`>
+<IdentifierToken, 4, `argv`>
+<DelimiterToken, 2, `[`>
+<DelimiterToken, 3, `]`>
+<DelimiterToken, 1, `)`>
+
+Line 16:
+<DelimiterToken, 4, `{`>
+
+Line 17:
+<IdentifierToken, 0, `A`>
+<IdentifierToken, 5, `aa`>
+<DelimiterToken, 7, `;`>
+
+Line 18:
+<KeywordToken, 12, `char`>
+<IdentifierToken, 6, `a`>
+<BinaryOperatorToken, 14, `=`>
+<CharToken, 1, `1`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 7, `b`>
+<BinaryOperatorToken, 14, `=`>
+<CharToken, \, `\'`>
+<DelimiterToken, 7, `;`>
+
+Line 19:
+<IdentifierToken, 8, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 9, `string`>
+<IdentifierToken, 10, `s1`>
+<BinaryOperatorToken, 14, `=`>
+<StringToken, `string value\n`>
+<DelimiterToken, 6, `,`>
+<IdentifierToken, 11, `s2`>
+<BinaryOperatorToken, 14, `=`>
+<StringToken, `67gi8gb_+@#$%s^&*(oimk`>
+<DelimiterToken, 7, `;`>
+
+Line 20:
+<IdentifierToken, 8, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 12, `cout`>
+<BinaryOperatorToken, 5, `<<`>
+<IdentifierToken, 10, `s1`>
+<DelimiterToken, 7, `;`>
+
+Line 21:
+<IdentifierToken, 8, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 13, `cin`>
+<BinaryOperatorToken, 6, `>>`>
+<IdentifierToken, 11, `s2`>
+<DelimiterToken, 7, `;`>
+
+Line 22:
+<IdentifierToken, 5, `aa`>
+<BinaryOperatorToken, 11, `.`>
+<IdentifierToken, 1, `s`>
+<BinaryOperatorToken, 14, `=`>
+<DelimiterToken, 0, `(`>
+<UnaryOperatorToken, 3, `~`>
+<IntToken, 2, `2`>
+<UnaryOperatorToken, 2, `|`>
+<IntToken, 4, `4`>
+<DelimiterToken, 1, `)`>
+<DelimiterToken, 7, `;`>
+
+Line 23:
+<IdentifierToken, 6, `a`>
+<BinaryOperatorToken, 21, `%=`>
+<DelimiterToken, 0, `(`>
+<UnaryOperatorToken, 1, `&`>
+<IdentifierToken, 5, `aa`>
+<DelimiterToken, 1, `)`>
+<BinaryOperatorToken, 8, `-`>
+<BinaryOperatorToken, 16, `>`>
+<IdentifierToken, 1, `s`>
+<DelimiterToken, 7, `;`>
+
+Line 24:
+<KeywordToken, 58, `return`>
+<IntToken, 0, `0`>
+<DelimiterToken, 7, `;`>
+
+Line 25:
+<DelimiterToken, 5, `}`>
+
+Line 26:
+Lexer finished.
+
+Token counters:
+EmptyToken: 3
+IdentifierToken: 34
+KeywordToken: 0
+IntToken: 3
+FloatToken: 0
+CharToken: 2
+StringToken: 2
+UnaryOperatorToken: 3
+BinaryOperatorToken: 16
+TernaryOperatorToken: 0
+DelimiterToken: 28
+26 lines.
+346 characters.
+0 errors.
+
+Press Enter to exit.
+\end{lstlisting}
+程序完整无误地识别出了所有高级运算符，根据建立的符号表识别出了出现过的符号，并输出了统计信息。
+\subsubsection{延伸测试样例-大规模真实数据：$legal\_5.cpp$}
+本样例测试程序对大规模、真实数据的识别，源代码中不含词法错误。
+将$legal\_5.cpp$文件拖拽至$main.exe$文件上，分析输出了所有符号的信息，因样例和输出太长，此处略去。
+\subsection{含错误源文件样例}
+\subsubsection{错误处理测试样例-常数中的错误：$illegal\_1.cpp$}
+\begin{lstlisting}
+/*
+    错误处理测试样例-常数中的错误
 */
 
 int main(int argc, char const *argv[])
@@ -467,34 +899,23 @@ int main(int argc, char const *argv[])
     const int _a = ~0., B_ = 11;
     double d2 = 0.3e2 + _a;
     int j = 0xz1, k = 011;
-    char c = '\';
-    std::string s = "string value\n";
-    std::cout << s;
     return 0;
 }
-\end{verbatim}
-将$illegal.cpp$文件拖拽至$main.exe$文件上，输出
-\begin{verbatim}
+\end{lstlisting}
+将$illegal\_1.cpp$文件拖拽至$main.exe$文件上，分析输出
+\begin{lstlisting}
 Line 1
-<EmptyToken, 1, `#include <iostream>`>
 
 Line 2:
-<EmptyToken, 1, `#include <string>`>
 
 Line 3:
+<EmptyToken, 1, `*
+    错误处理测试样例-常数中的错误
+*`>
 
 Line 4:
 
 Line 5:
-
-Line 6:
-<EmptyToken, 1, `/*
-    含错误源文件。
-*/`>
-
-Line 7:
-
-Line 8:
 <KeywordToken, 40, `int`>
 <IdentifierToken, 0, `main`>
 <DelimiterToken, 0, `(`>
@@ -509,19 +930,19 @@ Line 8:
 <DelimiterToken, 3, `]`>
 <DelimiterToken, 1, `)`>
 
-Line 9:
+Line 6:
 <DelimiterToken, 4, `{`>
 
-Line 10:
+Line 7:
 <KeywordToken, 18, `const`>
 <KeywordToken, 40, `int`>
 <IdentifierToken, 3, `_a`>
 <BinaryOperatorToken, 14, `=`>
 <UnaryOperatorToken, 3, `~`>
-<ERROR at (10, 23): a digit excepted, maybe `0`? Jump to the next line.>
-<FloatToken, 0.000000, `0., `>
+<ERROR at (7, 22): a digit excepted, maybe `0`? Jump to the next line.>
+<FloatToken, 0.000000, `0.,`>
 
-Line 11:
+Line 8:
 <KeywordToken, 26, `double`>
 <IdentifierToken, 4, `d2`>
 <BinaryOperatorToken, 14, `=`>
@@ -530,61 +951,153 @@ Line 11:
 <IdentifierToken, 3, `_a`>
 <DelimiterToken, 7, `;`>
 
-Line 12:
+Line 9:
 <KeywordToken, 40, `int`>
 <IdentifierToken, 5, `j`>
 <BinaryOperatorToken, 14, `=`>
-<ERROR at (12, 15): HEX word excepted, maybe `0`? Jump to the next line.>
-<IntToken, 0, `0xz1`>
+<ERROR at (9, 14): HEX word excepted, maybe `0`? Jump to the next line.>
+<IntToken, 0, `0xz`>
 
-Line 13:
-<KeywordToken, 12, `char`>
-<IdentifierToken, 6, `c`>
-<BinaryOperatorToken, 14, `=`>
-<ERROR at (13, 17): missing `'` ? Jump to the next line.>
-<CharToken, \, `'\';
-`>
-
-Line 14:
-
-Line 15:
-<IdentifierToken, 7, `std`>
-<BinaryOperatorToken, 12, `::`>
-<IdentifierToken, 8, `cout`>
-<BinaryOperatorToken, 5, `<<`>
-<IdentifierToken, 9, `s`>
-<DelimiterToken, 7, `;`>
-
-Line 16:
+Line 10:
 <KeywordToken, 58, `return`>
 <IntToken, 0, `0`>
 <DelimiterToken, 7, `;`>
 
-Line 17:
+Line 11:
 <DelimiterToken, 5, `}`>
 
-Line 18:
+Line 12:
+Lexer finished.
+
+Token counters:
+EmptyToken: 1
+IdentifierToken: 16
+KeywordToken: 0
+IntToken: 2
+FloatToken: 2
+CharToken: 0
+StringToken: 0
+UnaryOperatorToken: 1
+BinaryOperatorToken: 5
+TernaryOperatorToken: 0
+DelimiterToken: 9
+12 lines.
+176 characters.
+2 errors.
+
+Press Enter to exit.
+\end{lstlisting}
+词法分析程序分析出了所有合法的符号，并找到了第$7$行和第$9$行的错误，尝试修正并继续运行至文件末尾，输出错误数$2$。
+\subsubsection{错误处理测试样例-转义字符：$illegal\_2.cpp$}
+\begin{lstlisting}
+#include <iostream>
+#include <string>
+
+/*
+    错误处理测试样例-转义字符
+*/
+
+int main(int argc, char const *argv[])
+{
+    std::string s = "string value\n";
+    char c = '\';
+    std::cout << s;
+    return 0;
+}
+\end{lstlisting}
+将$illegal\_2.cpp$文件拖拽至$main.exe$文件上，分析输出
+\begin{lstlisting}
+Line 1
+<EmptyToken, 1, `include <iostream`>
+
+Line 2:
+<EmptyToken, 1, `include <string`>
+
+Line 3:
+
+Line 4:
+
+Line 5:
+
+Line 6:
+<EmptyToken, 1, `*
+    错误处理测试样例-转义字符
+*`>
+
+Line 7:
+
+Line 8:
+<KeywordToken, 40, `int`>
+<IdentifierToken, 0, `main`>
+<DelimiterToken, 0, `(`>
+<KeywordToken, 40, `int`>
+<IdentifierToken, 1, `argc`>
+<DelimiterToken, 6, `,`>
+<KeywordToken, 12, `char`>
+<KeywordToken, 18, `const`>
+<BinaryOperatorToken, 9, `*`>
+<IdentifierToken, 2, `argv`>
+<DelimiterToken, 2, `[`>
+<DelimiterToken, 3, `]`>
+<DelimiterToken, 1, `)`>
+
+Line 9:
+<DelimiterToken, 4, `{`>
+
+Line 10:
+<IdentifierToken, 3, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 4, `string`>
+<IdentifierToken, 5, `s`>
+<BinaryOperatorToken, 14, `=`>
+<StringToken, `string value\n`>
+<DelimiterToken, 7, `;`>
+
+Line 11:
+<KeywordToken, 12, `char`>
+<IdentifierToken, 6, `c`>
+<BinaryOperatorToken, 14, `=`>
+<ERROR at (11, 16): missing `'` ? Jump to the next line.>
+<CharToken, \, `\'`>
+
+Line 12:
+<IdentifierToken, 3, `std`>
+<BinaryOperatorToken, 12, `::`>
+<IdentifierToken, 7, `cout`>
+<BinaryOperatorToken, 5, `<<`>
+<IdentifierToken, 5, `s`>
+<DelimiterToken, 7, `;`>
+
+Line 13:
+<KeywordToken, 58, `return`>
+<IntToken, 0, `0`>
+<DelimiterToken, 7, `;`>
+
+Line 14:
+<DelimiterToken, 5, `}`>
+
+Line 15:
 Lexer finished.
 
 Token counters:
 EmptyToken: 3
-IdentifierToken: 21
+IdentifierToken: 16
 KeywordToken: 0
-IntToken: 2
-FloatToken: 2
+IntToken: 1
+FloatToken: 0
 CharToken: 1
-StringToken: 0
-UnaryOperatorToken: 1
-BinaryOperatorToken: 8
+StringToken: 1
+UnaryOperatorToken: 0
+BinaryOperatorToken: 6
 TernaryOperatorToken: 0
 DelimiterToken: 10
-18 lines.
-270 characters.
-3 errors.
+15 lines.
+196 characters.
+1 errors.
 
 Press Enter to exit.
-  \end{verbatim}
-词法分析程序分析出了所有合法的符号，并找到了第$10$、$12$和$13$行的错误，尝试修正并继续运行至文件末尾，输出错误数$3$。
+\end{lstlisting}
+词法分析程序分析出了所有合法的符号，并找到了第$11$行的错误，尝试修正并继续运行至文件末尾，输出错误数$1$。
 \section{完成过程中遇到的问题}
 \subsection{程序在$g++$下出现的问题}
 若使用$g++$（版本号：$8.1.0$）编译本程序，程序有可能重复分析部分代码，但若使用$clang++$（版本号：$7.0.0$）或$Visual Studio 2017$编译

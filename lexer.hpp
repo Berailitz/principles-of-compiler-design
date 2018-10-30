@@ -167,10 +167,12 @@ enum LEX_DFA_STATE
     LEX_DFA_decs1floats1,
     LEX_DFA_decs2,
     LEX_DFA_decs3,
+    LEX_DFA_decs4,
     LEX_DFA_floats2,
     LEX_DFA_floats3,
     LEX_DFA_floats4,
     LEX_DFA_floats5,
+    LEX_DFA_floats6,
     LEX_DFA_chars1,
     LEX_DFA_chars2,
     LEX_DFA_chars3,
@@ -206,9 +208,9 @@ enum TokenType
     FloatTokenType,
     CharTokenType,
     StringTokenType,
-    UnaryOperatorTokenType,
-    BinaryOperatorTokenType,
-    TernaryOperatorTokenType,
+    UnaryOperatorTokenType, // 一元操作符
+    BinaryOperatorTokenType, // 二元操作符
+    TernaryOperatorTokenType, // 三元操作符
     DelimiterTokenType
 };
 const string TOKEN_NAMES[] = {
@@ -219,9 +221,9 @@ const string TOKEN_NAMES[] = {
     "FloatToken",
     "CharToken",
     "StringToken",
-    "UnaryOperatorToken",
-    "BinaryOperatorToken",
-    "TernaryOperatorToken",
+    "UnaryOperatorToken", // 一元操作符
+    "BinaryOperatorToken", // 二元操作符
+    "TernaryOperatorToken", // 三元操作符
     "DelimiterToken"};
 
 class TokenValueUnion
@@ -273,6 +275,7 @@ class Lexer
     void print_stat() const;
 
   private:
+    char next_char = '\0';
     LEX_DFA_STATE _state = LEX_DFA_languages;
     TextReader *reader = nullptr;
     unordered_map<string, int> *identifier_table;
@@ -280,15 +283,15 @@ class Lexer
     int error_counter = 0;
     int *token_counter = nullptr;
     void set_state(const LEX_DFA_STATE next_state);
-    void raise_error();
-    LEX_DFA_STATE get_state();
-    int get_keyword_index(const string text);
-    int get_identifier_index(const string text);
-    int get_operator_index(const string text);
-    int get_delimiter_index(const string text);
+    void raise_error(); // 错误处理
+    LEX_DFA_STATE get_state(); // 获取当前状态
+    int get_keyword_index(const string text); // 获取关键字序号，不是关键字则返回-1
+    int get_identifier_index(const string text); // 获取标识符序号，符号表中没有，则插入新的关键字
+    int get_operator_index(const string text); // 获取操作符序号
+    int get_delimiter_index(const string text); // 获取界符序号
     void receive_token(const TokenType &type, const bool do_retract); // 将IdentifierTokenType视为关键字或标识符
-    bool is_oct(const char next_char) const;
-    bool is_c_letter(const char next_char) const;
+    bool is_oct(const char target_char) const; // 检查是否为8进制字符
+    bool is_c_letter(const char target_char) const; // 检查是否为字母或下划线
 };
 
 string dump_token(const Token &token);
