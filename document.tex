@@ -2,10 +2,13 @@
 \documentclass[UTF8]{ctexart}
     \usepackage{amsmath}
     \usepackage{geometry}
+	\usepackage{graphicx}
 	\usepackage[utf8]{inputenc}
 	\usepackage{listings}
 	\usepackage{url}
 	\usepackage{verbatim}
+	
+	\graphicspath{ {./images/} }
 
     \title{词法分析程序说明文档}
     \author{2016211305班 \ 熊光正 （学号：2016211249）}
@@ -14,6 +17,7 @@
 \lstset{numbers=left,frame=single}
 \maketitle
 \tableofcontents
+\clearpage
 \section{符号说明}
 \begin{enumerate}
 	\item $[a-bc-de...]$: 序列中$a$至$b$、$c$至$d$或$e$中的任意字符；
@@ -348,7 +352,8 @@ int main(int argc, char const *argv[])
     return --d;
 }
 \end{lstlisting}
-将$legal\_1.cpp$文件拖拽至$main.exe$文件上，分析输出
+将$legal\_1.cpp$文件拖拽至$main.exe$文件上，分析输出 \\
+\includegraphics[width=\textwidth]{legal_1}
 \begin{lstlisting}
 Line 1
 
@@ -480,7 +485,8 @@ int main(int argc, char const *argv[])
     return 0;
 }
 \end{lstlisting}
-将$legal\_2.cpp$文件拖拽至$main.exe$文件上，分析输出
+将$legal\_2.cpp$文件拖拽至$main.exe$文件上，分析输出 \\
+\includegraphics[width=\textwidth]{legal_2}
 \begin{lstlisting}
 Line 1
 
@@ -598,7 +604,8 @@ int main(int argc, char const *argv[])
     return 0;
 }
 \end{lstlisting}
-将$legal\_3.cpp$文件拖拽至$main.exe$文件上，分析输出
+将$legal\_3.cpp$文件拖拽至$main.exe$文件上，分析输出 \\
+\includegraphics[width=\textwidth]{legal_3}
 \begin{lstlisting}
 Line 1
 <EmptyToken, 1, `include <string`>
@@ -717,7 +724,8 @@ int main(int argc, char const *argv[])
     return 0;
 }
 \end{lstlisting}
-将$legal\_4.cpp$文件拖拽至$main.exe$文件上，分析输出
+将$legal\_4.cpp$文件拖拽至$main.exe$文件上，分析输出 \\
+\includegraphics[width=\textwidth]{legal_4}
 \begin{lstlisting}
 Line 1
 <EmptyToken, 1, `include <iostream`>
@@ -886,7 +894,8 @@ Press Enter to exit.
 程序完整无误地识别出了所有高级运算符，根据建立的符号表识别出了出现过的符号，并输出了统计信息。
 \subsubsection{延伸测试样例-大规模真实数据：$legal\_5.cpp$}
 本样例测试程序对大规模、真实数据的识别，源代码中不含词法错误。
-将$legal\_5.cpp$文件拖拽至$main.exe$文件上，分析输出了所有符号的信息，因样例和输出太长，此处略去。
+将$legal\_5.cpp$文件拖拽至$main.exe$文件上，分析输出了所有符号的信息，因样例和输出太长，此处略去。 \\
+\includegraphics[width=\textwidth]{legal_5}
 \subsection{含错误源文件样例}
 \subsubsection{错误处理测试样例-常数中的错误：$illegal\_1.cpp$}
 \begin{lstlisting}
@@ -902,7 +911,8 @@ int main(int argc, char const *argv[])
     return 0;
 }
 \end{lstlisting}
-将$illegal\_1.cpp$文件拖拽至$main.exe$文件上，分析输出
+将$illegal\_1.cpp$文件拖拽至$main.exe$文件上，分析输出 \\
+\includegraphics[width=\textwidth]{illegal_1}
 \begin{lstlisting}
 Line 1
 
@@ -1005,7 +1015,8 @@ int main(int argc, char const *argv[])
     return 0;
 }
 \end{lstlisting}
-将$illegal\_2.cpp$文件拖拽至$main.exe$文件上，分析输出
+将$illegal\_2.cpp$文件拖拽至$main.exe$文件上，分析输出 \\
+\includegraphics[width=\textwidth]{illegal_2}
 \begin{lstlisting}
 Line 1
 <EmptyToken, 1, `include <iostream`>

@@ -129,7 +129,14 @@ string TextReader::get_current_string() const
         current_string.append(_buffer + start_index, LEXER_BUFFER_SIZE - start_index);
         if (is_in_retraction)
         {
-            current_string.append(_buffer, end_index - 1);
+            if (end_index == 0)
+            {
+                current_string.erase(current_string.size() - 1);
+            }
+            else
+            {
+                current_string.append(_buffer, end_index - 1);
+            }
         }
         else
         {
