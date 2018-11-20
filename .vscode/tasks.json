@@ -19,7 +19,7 @@
             "command": "clang-cl",
             "args": [
                 "-Z7",
-                "${file}",
+                "${fileDirname}\\main.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
                 "-std:c++14",

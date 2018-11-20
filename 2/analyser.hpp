@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <set>
@@ -13,6 +14,7 @@ using namespace std;
 using symbol = string;
 using Terminal = symbol;
 using Candidate = vector<symbol>;
+using SymbolList = vector<symbol>;
 using CandidateList = vector<Candidate>;
 using TerminalSet = set<Terminal>;
 using AnalyseTable = unordered_map<Terminal, int>;
@@ -22,22 +24,30 @@ const string PRODUCTION_MARK = "->";
 const symbol EMPTY_MARK = "@";
 const symbol END_MARK = "$";
 const string CANDIDATE_DELIMITER = "|";
+const string COLUMN_DELIMITER = "\t\t";
 
 class Nonterminal
 {
 public:
     Nonterminal();
+    Nonterminal(const Nonterminal *old_nonterminal);
+    Nonterminal(const Nonterminal &old_nonterminal);
+    ~Nonterminal();
     symbol name;
     CandidateList *candidates = nullptr;
     TerminalSet *firsts = nullptr;
     TerminalSet *follows = nullptr;
     AnalyseTable *table = nullptr;
+    void initialize(const Nonterminal *old_nonterminal);
 };
 
 class Rule
 {
 public:
     Rule();
+    Rule(const Rule *rule);
+    Rule(const Rule &rule);
+    ~Rule();
     symbol nonterminal;
     CandidateList *candidates = nullptr;
 };
@@ -51,7 +61,7 @@ public:
     TerminalSet *terminals = nullptr;
     NonterminalTable *nonterminals = nullptr;
     symbol start_symbol;
-    void get_input();
+    void create_grammar(istream &stream);
     Rule *build_rule(string grammar_text);
     void add_rule(Rule &new_rule);
     bool is_nonterminal(symbol word) const;
@@ -64,5 +74,9 @@ public:
     void analyse(string code_text);
 };
 
+SymbolList *string_to_vector(const string &raw_string);
 bool merge_set(TerminalSet &destination, const TerminalSet &source);
 // return true if destination updates
+
+template<class T>
+string container_to_string(T &container);

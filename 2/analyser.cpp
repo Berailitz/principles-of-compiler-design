@@ -1,5 +1,13 @@
 #include "analyser.hpp"
 
+SymbolList *string_to_vector(const string &raw_string)
+{
+    istringstream iss(raw_string);
+    SymbolList *words = new SymbolList((istream_iterator<string>(iss)),
+                         istream_iterator<string>());
+    return words;
+}
+
 bool merge_set(TerminalSet &destination, const TerminalSet &source)
 {
     int old_size = destination.size();
@@ -7,20 +15,171 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source)
     return destination.size() > old_size;
 }
 
+template<class T>
+string container_to_string(T &container)
+{
+    string separator = " ";
+    string result = "";
+    if (container.size() > 0)
+    {
+        auto it = container.begin();
+        result = *it;
+        it++;
+        for (; it != container.end(); it++)
+        {
+            result += (separator + *it);
+        }
+    }
+    return result;
+}
+
+Nonterminal::Nonterminal() : candidates(new CandidateList), firsts(new TerminalSet),
+    follows(new TerminalSet), table(new AnalyseTable)
+{
+}
+
+Nonterminal::Nonterminal(const Nonterminal *old_nonterminal)
+{
+    initialize(old_nonterminal);
+}
+
+Nonterminal::Nonterminal(const Nonterminal &old_nonterminal)
+{
+    initialize(&old_nonterminal);
+}
+
+Nonterminal::~Nonterminal()
+{
+    delete candidates;
+    delete firsts;
+    delete follows;
+    delete table;
+}
+
+void Nonterminal::initialize(const Nonterminal *old_nonterminal)
+{
+    candidates = new CandidateList(*old_nonterminal->candidates);
+    firsts = new TerminalSet(*old_nonterminal->firsts);
+    follows = new TerminalSet(*old_nonterminal->follows);
+    table = new AnalyseTable(*old_nonterminal->table);
+}
+
+Rule::Rule() : candidates(new CandidateList)
+{
+}
+
+Rule::Rule(const Rule *rule) : candidates(new CandidateList(*rule->candidates))
+{
+}
+
+Rule::Rule(const Rule &rule) : candidates(new CandidateList(*rule.candidates))
+{
+}
+
+Rule::~Rule()
+{
+    delete candidates;
+}
+
+Analyser::Analyser() : terminals(new TerminalSet), nonterminals(new NonterminalTable)
+{
+}
+
+void Analyser::create_grammar(istream &stream)
+{
+    string raw_string;
+    SymbolList *inputs;
+    Rule *rule;
+    char temp;
+    cout << "Note: all words should be separated by space, end with line break." << endl;
+    cout << "Please enter the non-terminals: ";
+    getline(stream, raw_string);
+    inputs = string_to_vector(raw_string);
+    cout << container_to_string(*inputs) << endl;
+    for (symbol &word: *inputs)
+    {
+        nonterminals->insert({word, Nonterminal()});
+    }
+    cout << "Please enter the terminals: ";
+    getline(stream, raw_string);
+    inputs = string_to_vector(raw_string);
+    cout << container_to_string(*inputs) << endl;
+    for (symbol &word: *inputs)
+    {
+        terminals->insert(word);
+    }
+    cout << "Please enter the start symbol: ";
+    stream >> start_symbol;
+    getline(stream, raw_string);
+    cout << "Please enter the rules, ome per line, enter `$` to exit:" << endl;
+    getline(stream, raw_string);
+    cout << raw_string << endl;
+    while (raw_string != "$")
+    {
+        rule = build_rule(raw_string);
+        add_rule(*rule);
+        delete rule;
+        getline(stream, raw_string);
+        cout << raw_string << endl;
+    }
+    cout << "Grammar: " << endl;
+    cout << "T:";
+    for (auto &t: *terminals)
+    {
+        cout << " " << t;
+    }
+    cout << endl;
+    cout << "N:";
+    for (auto &n: *nonterminals)
+    {
+        cout << " " << n.first;
+    }
+    cout << endl;
+    cout << "S: " << start_symbol << endl;
+    cout << "Rules: " << endl;
+    for (auto &n: *nonterminals)
+    {
+        bool is_first = true;
+        cout << n.first << " ->";
+        for (auto &r: *n.second.candidates)
+        {
+            string rule_text;
+            if (is_first)
+            {
+                is_first = false;
+            }
+            else
+            {
+                cout << " | ";
+            }
+            rule_text = container_to_string(r);
+            if (rule_text.size() > 0)
+            {
+                cout << rule_text;
+            }
+            else
+            {
+                cout << EMPTY_MARK;
+            }
+        }
+        cout << " (" << to_string(n.second.candidates->size()) << " candidates)" << endl;
+    }
+    cout << endl;
+}
+
 Rule *Analyser::build_rule(string grammar_text)
 {
     Rule *rule = new Rule;
-    istringstream iss(grammar_text);
-    vector<string> words((istream_iterator<string>(iss)),
-                         istream_iterator<string>());
-    if (words[1] == PRODUCTION_MARK)
+    SymbolList *words = string_to_vector(grammar_text);
+    cout << container_to_string(*words) << endl;
+    if (words->size() >= 3 && (*words)[1] == PRODUCTION_MARK)
     {
         Candidate *candidate = new Candidate;
-        cout << "ok";
-        rule->nonterminal = words[0];
-        for (int i = 1; i < words.size(); i++)
+        cout << "Rule accepted." << endl;
+        rule->nonterminal = (*words)[0];
+        for (int i = 2; i < words->size(); i++)
         {
-            symbol new_word = words[i];
+            symbol new_word = (*words)[i];
             if (new_word != CANDIDATE_DELIMITER)
             {
                 candidate->push_back(new_word);
@@ -37,18 +196,19 @@ Rule *Analyser::build_rule(string grammar_text)
     }
     else
     {
-        cout << "Invalid grammar.";
+        cout << "Rule not accepted." << endl;
         return nullptr;
     }
 }
 
 void Analyser::add_rule(Rule &new_rule)
 {
-    Nonterminal word = nonterminals->at(new_rule.nonterminal);
+    Nonterminal *word = &nonterminals->find(new_rule.nonterminal)->second;
     for (Candidate &it : (*new_rule.candidates))
     {
-        word.candidates->push_back(it);
+        word->candidates->push_back(it);
     }
+    cout << to_string(word->candidates->size()) << " rules added." << endl;
 }
 
 bool Analyser::is_nonterminal(symbol word) const
@@ -70,13 +230,20 @@ TerminalSet Analyser::get_firsts(symbol word) const
 
 TerminalSet Analyser::get_firsts(Candidate &candidate) const
 {
-    TerminalSet current_set = get_firsts(candidate[0]);
-    if (current_set.find(EMPTY_MARK) != current_set.end() && candidate.size() > 1)
+    if (candidate.size() == 0)
     {
-        Candidate new_candidate(candidate.begin() + 1, candidate.end());
-        merge_set(current_set, get_firsts(new_candidate));
+        return {EMPTY_MARK};
     }
-    return current_set;
+    else
+    {
+        TerminalSet current_set = get_firsts(candidate[0]);
+        if (current_set.find(EMPTY_MARK) != current_set.end() && candidate.size() > 1)
+        {
+            Candidate new_candidate(candidate.begin() + 1, candidate.end());
+            merge_set(current_set, get_firsts(new_candidate));
+        }
+        return current_set;
+    }
 }
 
 void Analyser::calculate_firsts()
@@ -84,6 +251,11 @@ void Analyser::calculate_firsts()
     bool need_update = true;
     while (need_update)
     {
+        cout << "FIRST set:" << endl;
+        for (auto &nit: *nonterminals)
+        {
+            cout << nit.first << ":\t" << container_to_string(*nit.second.firsts) << endl;
+        }
         need_update = false;
         for (auto &nit: *nonterminals)
         {
@@ -95,41 +267,61 @@ void Analyser::calculate_firsts()
             }
         }
     }
+    cout << "FIRST set:" << endl;
+    for (auto &nit: *nonterminals)
+    {
+        cout << nit.first << ":\t" << container_to_string(*nit.second.firsts) << endl;
+    }
 }
 
 void Analyser::calculate_follows()
 {
     bool need_update = true;
     nonterminals->at(start_symbol).follows->insert(END_MARK);
-    for (auto &nit: *nonterminals)
+    while (need_update)
     {
-        need_update = false;
-        TerminalSet temp;
-        for (Candidate &cit: *nit.second.candidates)
+        cout << "FOLLOW set:" << endl;
+        for (auto &nit: *nonterminals)
         {
-            int i = 1;
-            for (symbol &word: cit)
+            cout << nit.first << ":\t" << container_to_string(*nit.second.follows) << endl;
+        }
+        for (auto &nit: *nonterminals)
+        {
+            need_update = false;
+            TerminalSet temp;
+            for (Candidate &cit: *nit.second.candidates)
             {
-                if (is_nonterminal(word))
+                int i = 1;
+                for (symbol &word: cit)
                 {
-                    if (i == nit.second.candidates->size())
+                    if (is_nonterminal(word))
                     {
-                        need_update = merge_set(*nonterminals->at(word).follows, *nit.second.follows) || need_update;
-                    }
-                    else
-                    {
-                        Candidate endian(cit.begin() + i, cit.end());
-                        TerminalSet new_set = get_firsts(endian);
-                        if (new_set.find(EMPTY_MARK) != new_set.end())
+                        if (i == cit.size())
                         {
-                            merge_set(new_set, *nit.second.follows);
+                            need_update = merge_set(*nonterminals->at(word).follows, *nit.second.follows) || need_update;
                         }
-                        need_update = merge_set(*nonterminals->at(word).follows, new_set) || need_update;
+                        else
+                        {
+                            Candidate endian(cit.begin() + i, cit.end());
+                            TerminalSet new_set = get_firsts(endian);
+                            TerminalSet::iterator tit = new_set.find(EMPTY_MARK);
+                            if (tit != new_set.end())
+                            {
+                                new_set.erase(tit);
+                                merge_set(new_set, *nit.second.follows);
+                            }
+                            need_update = merge_set(*nonterminals->at(word).follows, new_set) || need_update;
+                        }
                     }
+                    i++;
                 }
-                i++;
             }
         }
+    }
+    cout << "FOLLOW set:" << endl;
+    for (auto &nit: *nonterminals)
+    {
+        cout << nit.first << ":\t" << container_to_string(*nit.second.follows) << endl;
     }
 }
 
@@ -147,16 +339,43 @@ void Analyser::build_table()
                 {
                     for (Terminal const &follower: *nit.second.follows)
                     {
-                        nit.second.table->at(follower) = i;
+                        nit.second.table->insert({follower, i});
                     }
                 }
                 else
                 {
-                    nit.second.table->at(t) = i;
+                    nit.second.table->insert({t, i});
                 }
             }
             i++;
         }
+    }
+}
+
+void Analyser::print_table() const
+{
+    for (const symbol &word: *terminals)
+    {
+        cout << COLUMN_DELIMITER << word;
+    }
+    cout << endl;
+    for (const auto &nit: *nonterminals)
+    {
+        cout << nit.first;
+        for (const symbol &word: *terminals)
+        {
+            cout << COLUMN_DELIMITER;
+            if (nit.second.table->find(word) != nit.second.table->end())
+            {
+                string rule_text = container_to_string(nit.second.candidates->at(nit.second.table->at(word)));
+                if (rule_text.size() == 0)
+                {
+                    rule_text = "@";
+                }
+                cout << nit.first << PRODUCTION_MARK << rule_text;
+            }
+        }
+        cout << endl;
     }
 }
 
