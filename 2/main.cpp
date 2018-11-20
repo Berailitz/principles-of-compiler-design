@@ -2,10 +2,11 @@
 
 int main(int argc, char const *argv[])
 {
+    ifstream stream;
     Analyser analyser;
     if (argc == 2)
     {
-        ifstream stream(argv[1]);
+        stream.open(argv[1]);
         analyser.create_grammar(stream);
     }
     else
@@ -16,6 +17,14 @@ int main(int argc, char const *argv[])
     analyser.calculate_follows();
     analyser.build_table();
     analyser.print_table();
+    if (argc == 2)
+    {
+        analyser.receive_text(stream);
+    }
+    else
+    {
+        analyser.receive_text(cin);
+    }
     cin.get();
     return 0;
 }

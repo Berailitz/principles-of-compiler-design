@@ -4,7 +4,6 @@
 #include <iterator>
 #include <set>
 #include <sstream>
-#include <stack>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -18,7 +17,7 @@ using SymbolList = vector<symbol>;
 using CandidateList = vector<Candidate>;
 using TerminalSet = set<Terminal>;
 using AnalyseTable = unordered_map<Terminal, int>;
-using SymbolStack = stack<Terminal>;
+using SymbolStack = vector<Terminal>;
 
 const string PRODUCTION_MARK = "->";
 const symbol EMPTY_MARK = "@";
@@ -73,6 +72,7 @@ public:
     void calculate_follows();
     void build_table();
     void print_table() const;
+    void receive_text(istream &stream);
     void analyse(string code_text);
 };
 
@@ -81,4 +81,4 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source);
 // return true if destination updates
 
 template<class T>
-string container_to_string(T &container, string separator = " ");
+string container_to_string(T &container, string separator = " ", const int start_index = 0);

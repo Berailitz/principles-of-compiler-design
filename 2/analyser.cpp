@@ -16,12 +16,13 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source)
 }
 
 template<class T>
-string container_to_string(T &container, string separator)
+string container_to_string(T &container, string separator, const int start_index)
 {
     string result = "";
-    if (container.size() > 0)
+    if (container.size() > start_index)
     {
         auto it = container.begin();
+        advance(it, start_index);
         result = *it;
         it++;
         for (; it != container.end(); it++)
@@ -394,45 +395,83 @@ void Analyser::print_table() const
     }
 }
 
+void Analyser::receive_text(istream &stream)
+{
+    string raw_string;
+    cout << "Please enter a piece of text to analyse: ";
+    getline(stream, raw_string);
+    analyse(raw_string);
+}
+
 void Analyser::analyse(string code_text)
 {
-    string::iterator it = code_text.begin();
+    int i = 1;
     SymbolStack stack;
-    stack.push(END_MARK);
-    stack.push(start_symbol);
-    while (stack.top() != END_MARK)
+    SymbolList *words = string_to_vector(code_text);
+    SymbolList::iterator wit = words->begin();
+    words->push_back(END_MARK);
+    stack.push_back(END_MARK);
+    stack.push_back(start_symbol);
+    cout << endl << "No.\tStack\tInput\tOutput" << endl;
+    while (true)
     {
-        symbol top = stack.top();
-        string it_string = to_string(*it);
-        if (is_nonterminal(top))
+        if (wit == words->end())
         {
-            Nonterminal nonterminal = nonterminals->at(top);
-            try
-            {
-                int candidate_index = nonterminal.table->at(it_string);
-                Candidate candidate = nonterminal.candidates->at(candidate_index);
-                stack.pop();
-                for (Candidate::reverse_iterator rit = candidate.rbegin(); rit != candidate.rend(); rit++)
-                {
-                    stack.push(*rit);
-                }
-            }
-            catch (const std::out_of_range &e)
-            {
-                cout << "Error prasing.";
-            }
+            cout << "ERROR" << endl;
         }
         else
         {
-            if (it_string == top)
+            cout << to_string(i) << "\t" << container_to_string(stack, "") << "\t" << container_to_string(*words, "", wit - words->begin()) <<  "\t";
+            if (stack.back() == END_MARK && *wit == END_MARK)
             {
-                stack.pop();
-                it++;
+                cout << "FINISHED";
+                break;
             }
             else
             {
-                cout << "Error prasing.";
+                symbol top = stack.back();
+                if (is_nonterminal(top))
+                {
+                    Nonterminal nonterminal = nonterminals->at(top);
+                    AnalyseTable::iterator ait = nonterminal.table->find(*wit);
+                    if (ait == nonterminal.table->end())
+                    {
+                        cout << "Error prasing.";
+                    }
+                    else
+                    {
+                        Candidate candidate = nonterminal.candidates->at(ait->second);
+                        string candidate_text = container_to_string(candidate);
+                        stack.pop_back();
+                        for (Candidate::reverse_iterator rit = candidate.rbegin(); rit != candidate.rend(); rit++)
+                        {
+                            stack.push_back(*rit);
+                        }
+                        if (candidate_text.size() == 0)
+                        {
+                            candidate_text = EMPTY_MARK;
+                        }
+                        cout << top << PRODUCTION_MARK << candidate_text;
+                    }
+                }
+                else
+                {
+                    if (*wit == top)
+                    {
+                        stack.pop_back();
+                        cout << "Match";
+                        wit++;
+                    }
+                    else
+                    {
+                        cout << "Error prasing.";
+                    }
+                }
+                i++;
             }
+            cout << endl;
         }
     }
+    cout << endl;
+    delete words;
 }

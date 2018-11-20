@@ -7,3 +7,4 @@ T -> F T'
 T' -> * F T' |
 F -> ( E ) | id
 $
+id + id * id
