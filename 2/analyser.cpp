@@ -16,9 +16,8 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source)
 }
 
 template<class T>
-string container_to_string(T &container)
+string container_to_string(T &container, string separator)
 {
-    string separator = " ";
     string result = "";
     if (container.size() > 0)
     {
@@ -349,6 +348,13 @@ void Analyser::build_table()
             }
             i++;
         }
+        for (Terminal const &follower: *nit.second.follows)
+        {
+            if (nit.second.table->find(follower) == nit.second.table->end())
+            {
+                nit.second.table->insert({follower, SYNCH_MARK_INDEX});
+            }
+        }
     }
 }
 
@@ -367,12 +373,21 @@ void Analyser::print_table() const
             cout << COLUMN_DELIMITER;
             if (nit.second.table->find(word) != nit.second.table->end())
             {
-                string rule_text = container_to_string(nit.second.candidates->at(nit.second.table->at(word)));
-                if (rule_text.size() == 0)
+                string rule_text;
+                int rule_index = nit.second.table->at(word);
+                if (rule_index == -1)
                 {
-                    rule_text = "@";
+                    cout << SYNCH_MARK;
                 }
-                cout << nit.first << PRODUCTION_MARK << rule_text;
+                else
+                {
+                    rule_text = container_to_string(nit.second.candidates->at(rule_index), "");
+                    if (rule_text.size() == 0)
+                    {
+                        rule_text = "@";
+                    }
+                    cout << nit.first << PRODUCTION_MARK << rule_text;
+                }
             }
         }
         cout << endl;

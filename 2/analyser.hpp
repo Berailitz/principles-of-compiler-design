@@ -23,8 +23,10 @@ using SymbolStack = stack<Terminal>;
 const string PRODUCTION_MARK = "->";
 const symbol EMPTY_MARK = "@";
 const symbol END_MARK = "$";
+const symbol SYNCH_MARK = "synch";
+const int SYNCH_MARK_INDEX = -1;
 const string CANDIDATE_DELIMITER = "|";
-const string COLUMN_DELIMITER = "\t\t";
+const string COLUMN_DELIMITER = "\t";
 
 class Nonterminal
 {
@@ -79,4 +81,4 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source);
 // return true if destination updates
 
 template<class T>
-string container_to_string(T &container);
+string container_to_string(T &container, string separator = " ");
