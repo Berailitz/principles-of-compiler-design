@@ -1,3 +1,11 @@
+*.xlsx
+*.zip
+
+*.synctex.gz
+*.pdf
+*.pdb
+*.ilk
+
 # Prerequisites
 *.d
 

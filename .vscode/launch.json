@@ -2,7 +2,47 @@
     "version": "2.0.0",
     "configurations": [
         {
+            "name": "Python: Terminal (integrated)",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Clang-cl",                 // 配置名称，将会在启动配置的下拉菜单中显示
+            "type": "cppvsdbg",                           // 配置类型，这里只能为cppdbg
+            "request": "launch",                        // 请求配置类型，可以为launch（启动）或attach（附加）
+            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",                   // 将要进行调试的程序的路径
+            "args": [],     // 程序调试时传递给程序的命令行参数，一般设为空即可
+            "stopAtEntry": false,                       // 设为true时程序将暂停在程序入口处，一般设置为false
+            "cwd": "${fileDirname}",                  // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
+            "externalConsole": true,                    // 调试时是否显示控制台窗口，一般设置为true显示控制台
+            "preLaunchTask": "clang-cl"　　                  // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+        },
+        {
+            "name": "Clang-cl-static",                 // 配置名称，将会在启动配置的下拉菜单中显示
+            "type": "cppvsdbg",                           // 配置类型，这里只能为cppdbg
+            "request": "launch",                        // 请求配置类型，可以为launch（启动）或attach（附加）
+            "program": "${fileDirname}\\${fileBasenameNoExtension}-static.exe",                   // 将要进行调试的程序的路径
+            "args": [],     // 程序调试时传递给程序的命令行参数，一般设为空即可
+            "stopAtEntry": false,                       // 设为true时程序将暂停在程序入口处，一般设置为false
+            "cwd": "${fileDirname}",                  // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
+            "externalConsole": true,                    // 调试时是否显示控制台窗口，一般设置为true显示控制台
+            "preLaunchTask": "clang-cl-static"　　                  // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+        },
+        {
             "name": "Clang++",                 // 配置名称，将会在启动配置的下拉菜单中显示
+            "type": "cppvsdbg",                           // 配置类型，这里只能为cppdbg
+            "request": "launch",                        // 请求配置类型，可以为launch（启动）或attach（附加）
+            "program": "${fileDirname}\\${fileBasenameNoExtension}.exe",                   // 将要进行调试的程序的路径
+            "args": [],     // 程序调试时传递给程序的命令行参数，一般设为空即可
+            "stopAtEntry": false,                       // 设为true时程序将暂停在程序入口处，一般设置为false
+            "cwd": "${fileDirname}",                  // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
+            "externalConsole": true,                    // 调试时是否显示控制台窗口，一般设置为true显示控制台
+            "preLaunchTask": "clang++"　　                  // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+        },
+        {
+            "name": "g++",                 // 配置名称，将会在启动配置的下拉菜单中显示
             "type": "cppdbg",                           // 配置类型，这里只能为cppdbg
             "request": "launch",                        // 请求配置类型，可以为launch（启动）或attach（附加）
             "targetArchitecture": "x64",                // 生成目标架构，一般为x86或x64，可以为x86, arm, arm64, mips, x64, amd64, x86_64
@@ -12,7 +52,7 @@
             "stopAtEntry": false,                       // 设为true时程序将暂停在程序入口处，一般设置为false
             "cwd": "${fileDirname}",                  // 调试程序时的工作目录，一般为${workspaceRoot}即代码所在目录
             "externalConsole": true,                    // 调试时是否显示控制台窗口，一般设置为true显示控制台
-            "preLaunchTask": "clang++"　　                  // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
+            "preLaunchTask": "g++"　　                  // 调试会话开始前执行的任务，一般为编译程序，c++为g++, c为gcc
         }
     ]
 }

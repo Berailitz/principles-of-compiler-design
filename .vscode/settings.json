@@ -1,7 +1,7 @@
 {
     "clang.cxxflags": [
-        "-std=c++14",
-        "--target=x86_64-w64-mingw64",
+        "-std=c++17",
+        "--target=x86_64-pc-windows-mingw64"
     ],
     "files.autoGuessEncoding": true,
     "files.associations": {
@@ -59,6 +59,12 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "cctype": "cpp",
+        "set": "cpp",
+        "stack": "cpp",
+        "iterator": "cpp",
+        "string_view": "cpp",
+        "unordered_set": "cpp"
     },
 }
