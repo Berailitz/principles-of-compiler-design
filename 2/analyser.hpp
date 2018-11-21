@@ -81,8 +81,10 @@ public:
     void eliminate_recursion();
     void eliminate_common_prefix();
     void calculate_follows();
-    void build_table();
+    bool build_table(bool no_error = true);
     void print_table() const;
+    void print_firsts() const;
+    void print_follows() const;
     void receive_text(istream &stream);
     void analyse(string code_text);
 };

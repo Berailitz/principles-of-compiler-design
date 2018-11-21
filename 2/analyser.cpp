@@ -98,16 +98,28 @@ void Analyser::create_grammar(istream &stream)
     receive_grammar(stream);
     print_grammar();
     calculate_firsts();
-    eliminate_empty();
-    print_grammar();
-    eliminate_recursion();
-    print_grammar();
-    eliminate_common_prefix();
-    print_grammar();
-    calculate_firsts();
+    print_firsts();
     calculate_follows();
-    build_table();
-    print_table();
+    print_follows();
+    if (build_table(true))
+    {
+        print_table();
+    }
+    else
+    {
+        eliminate_empty();
+        print_grammar();
+        eliminate_recursion();
+        print_grammar();
+        eliminate_common_prefix();
+        print_grammar();
+        calculate_firsts();
+        print_firsts();
+        calculate_follows();
+        print_follows();
+        build_table();
+        print_table();
+    }
 }
 
 void Analyser::receive_grammar(istream &stream)
@@ -138,14 +150,12 @@ void Analyser::receive_grammar(istream &stream)
     getline(stream, raw_string);
     cout << "Please enter the rules, ome per line, enter `$` to exit:" << endl;
     getline(stream, raw_string);
-    cout << raw_string << endl;
     while (raw_string != "$")
     {
         rule = build_rule(raw_string);
         add_rule(*rule);
         delete rule;
         getline(stream, raw_string);
-        cout << raw_string << endl;
     }
     cout << endl;
 }
@@ -201,7 +211,6 @@ Rule *Analyser::build_rule(string grammar_text)
 {
     Rule *rule = new Rule;
     SymbolList *words = string_to_vector(grammar_text);
-    cout << container_to_string(*words) << endl;
     if (words->size() >= 3 && (*words)[1] == PRODUCTION_MARK)
     {
         Candidate *candidate = new Candidate;
@@ -279,13 +288,9 @@ TerminalSet Analyser::get_firsts(Candidate &candidate) const
 void Analyser::calculate_firsts()
 {
     bool need_update = true;
+    cout << "Calculating FIRSTs..." << endl;
     while (need_update)
     {
-        cout << "FIRST set:" << endl;
-        for (auto &nit: *nonterminals)
-        {
-            cout << nit.first << ":\t" << container_to_string(*nit.second.firsts) << endl;
-        }
         need_update = false;
         for (auto &nit: *nonterminals)
         {
@@ -297,11 +302,7 @@ void Analyser::calculate_firsts()
             }
         }
     }
-    cout << "FIRST set:" << endl;
-    for (auto &nit: *nonterminals)
-    {
-        cout << nit.first << ":\t" << container_to_string(*nit.second.firsts) << endl;
-    }
+    cout << "Done." << endl;
 }
 
 void Analyser::add_candidates(CandidateList &candidates, Candidate prefix, Candidate postfix)
@@ -332,6 +333,7 @@ void Analyser::add_candidates(CandidateList &candidates, Candidate prefix, Candi
 
 void Analyser::eliminate_empty()
 {
+    cout << "Eliminating empty rules..." << endl;
     for (auto &nit: *nonterminals)
     {
         CandidateList *old_candidates = nit.second.candidates;
@@ -347,6 +349,7 @@ void Analyser::eliminate_empty()
             nit.second.candidates->push_back({EMPTY_MARK});
         }
     }
+    cout << "Done." << endl;
 }
 
 bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
@@ -498,15 +501,11 @@ void Analyser::eliminate_common_prefix()
 void Analyser::calculate_follows()
 {
     bool need_update = true;
+    cout << "Calculating FOLLOWs..." << endl;
     nonterminals->at(start_symbol).follows->insert(END_MARK);
     while (need_update)
     {
         need_update = false;
-        cout << "FOLLOW set:" << endl;
-        for (auto &nit: *nonterminals)
-        {
-            cout << nit.first << ":\t" << container_to_string(*nit.second.follows) << endl;
-        }
         for (auto &nit: *nonterminals)
         {
             TerminalSet temp;
@@ -539,15 +538,12 @@ void Analyser::calculate_follows()
             }
         }
     }
-    cout << "FOLLOW set:" << endl;
-    for (auto &nit: *nonterminals)
-    {
-        cout << nit.first << ":\t" << container_to_string(*nit.second.follows) << endl;
-    }
+    cout << "Done." << endl;
 }
 
-void Analyser::build_table()
+bool Analyser::build_table(bool no_error)
 {
+    cout << "Building table..." << endl;
     for (auto &nit: *nonterminals)
     {
         int i = 0;
@@ -568,7 +564,15 @@ void Analyser::build_table()
                         }
                         else
                         {
-                            raise_error("ERROR: Non-LL(1) grammar detected.");
+                            if (no_error)
+                            {
+                                cout << "Try again." << endl;
+                                return false;
+                            }
+                            else
+                            {
+                                raise_error("ERROR: Non-LL(1) grammar detected.");
+                            }
                         }
                     }
                 }
@@ -581,7 +585,15 @@ void Analyser::build_table()
                     }
                     else
                     {
-                        raise_error("ERROR: Non-LL(1) grammar detected.");
+                        if (no_error)
+                        {
+                            cout << "Try again." << endl;
+                            return false;
+                        }
+                        else
+                        {
+                            raise_error("ERROR: Non-LL(1) grammar detected.");
+                        }
                     }
                 }
             }
@@ -595,6 +607,8 @@ void Analyser::build_table()
             }
         }
     }
+    cout << "Done." << endl;
+    return true;
 }
 
 void Analyser::print_table() const
@@ -631,6 +645,24 @@ void Analyser::print_table() const
             }
         }
         cout << endl;
+    }
+}
+
+void Analyser::print_firsts() const
+{
+    cout << "FIRST set:" << endl;
+    for (auto &nit: *nonterminals)
+    {
+        cout << nit.first << ":\t" << container_to_string(*nit.second.firsts) << endl;
+    }
+}
+
+void Analyser::print_follows() const
+{
+    cout << "FOLLOW set:" << endl;
+    for (auto &nit: *nonterminals)
+    {
+        cout << nit.first << ":\t" << container_to_string(*nit.second.follows) << endl;
     }
 }
 

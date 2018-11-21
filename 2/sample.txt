@@ -1,9 +1,10 @@
-Q R S
-a b c
-R
-R -> S a | a
-Q -> R b | b
-S -> Q c | c
+E E' T T' F
++ * ( ) id
+E
+E -> T E'
+E' -> + T E' |
+T -> F T'
+T' -> * F T' |
+F -> ( E ) | id
 $
 id * + id * id
-$
