@@ -407,36 +407,49 @@ void Analyser::analyse(string code_text)
 {
     int i = 1;
     SymbolStack stack;
-    SymbolList *words = string_to_vector(code_text);
+    string sentence = "";
+    SymbolList *words = string_to_vector(code_text + " " + END_MARK);
     SymbolList::iterator wit = words->begin();
-    words->push_back(END_MARK);
     stack.push_back(END_MARK);
     stack.push_back(start_symbol);
-    cout << endl << "No.\tStack\tInput\tOutput" << endl;
+    cout << endl << "No.\tStack\tInput\tSentence\tOutput" << endl;
     while (true)
     {
-        if (wit == words->end())
+        symbol top = stack.back();
+        cout << to_string(i) << "\t" << container_to_string(stack, "") << "\t";
+        cout << container_to_string(*words, "", wit - words->begin()) <<  "\t";
+        cout << sentence << container_to_string(stack, "", 1) <<  "\t";
+        if (top == END_MARK)
         {
-            cout << "ERROR" << endl;
-        }
-        else
-        {
-            cout << to_string(i) << "\t" << container_to_string(stack, "") << "\t" << container_to_string(*words, "", wit - words->begin()) <<  "\t";
-            if (stack.back() == END_MARK && *wit == END_MARK)
+            if (*wit == END_MARK)
             {
                 cout << "FINISHED";
                 break;
             }
             else
             {
-                symbol top = stack.back();
-                if (is_nonterminal(top))
+                cout << "ERROR: end of string expected.";
+                break;
+            }
+        }
+        else
+        {
+            if (is_nonterminal(top))
+            {
+                Nonterminal nonterminal = nonterminals->at(top);
+                AnalyseTable::iterator ait = nonterminal.table->find(*wit);
+                if (ait == nonterminal.table->end())
                 {
-                    Nonterminal nonterminal = nonterminals->at(top);
-                    AnalyseTable::iterator ait = nonterminal.table->find(*wit);
-                    if (ait == nonterminal.table->end())
+                    cout << "Error: skip unexpected word `" << *wit << "`.";
+                    wit++;
+                }
+                else
+                {
+                    const int candidate_index = ait->second;
+                    if (candidate_index == SYNCH_MARK_INDEX)
                     {
-                        cout << "Error prasing.";
+                        cout << "ERROR: pop finished nonterminal `" << top << "`";
+                        stack.pop_back();
                     }
                     else
                     {
@@ -454,23 +467,25 @@ void Analyser::analyse(string code_text)
                         cout << top << PRODUCTION_MARK << candidate_text;
                     }
                 }
+            }
+            else
+            {
+                if (*wit == top)
+                {
+                    sentence += top;
+                    stack.pop_back();
+                    cout << "Match";
+                    wit++;
+                }
                 else
                 {
-                    if (*wit == top)
-                    {
-                        stack.pop_back();
-                        cout << "Match";
-                        wit++;
-                    }
-                    else
-                    {
-                        cout << "Error prasing.";
-                    }
+                    cout << "ERROR: pop finished terminal `" << top << "`";
+                    stack.pop_back();
                 }
-                i++;
             }
-            cout << endl;
+            i++;
         }
+        cout << endl;
     }
     cout << endl;
     delete words;
