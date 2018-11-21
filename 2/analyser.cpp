@@ -4,7 +4,7 @@ SymbolList *string_to_vector(const string &raw_string)
 {
     istringstream iss(raw_string);
     SymbolList *words = new SymbolList((istream_iterator<string>(iss)),
-                         istream_iterator<string>());
+                                       istream_iterator<string>());
     return words;
 }
 
@@ -15,7 +15,7 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source)
     return destination.size() > old_size;
 }
 
-template<class T>
+template <class T>
 string container_to_string(T &container, string separator, const int start_index)
 {
     string result = "";
@@ -33,7 +33,7 @@ string container_to_string(T &container, string separator, const int start_index
     return result;
 }
 
-template<class T>
+template <class T>
 string reversed_container_to_string(T &container, string separator, const int start_index)
 {
     string result = "";
@@ -51,7 +51,7 @@ string reversed_container_to_string(T &container, string separator, const int st
 }
 
 Nonterminal::Nonterminal(string name) : candidates(new CandidateList), firsts(new TerminalSet),
-    follows(new TerminalSet), table(new AnalyseTable), name(name)
+                                        follows(new TerminalSet), table(new AnalyseTable), name(name)
 {
 }
 
@@ -112,7 +112,7 @@ void Analyser::raise_error(string message)
 
 void Analyser::clear_grammar()
 {
-    for (auto &n: *nonterminals)
+    for (auto &n : *nonterminals)
     {
         delete n.second.table;
         n.second.table = new AnalyseTable();
@@ -163,16 +163,14 @@ void Analyser::receive_grammar(istream &stream)
     cout << "Please enter the non-terminals: ";
     getline(stream, raw_string);
     inputs = string_to_vector(raw_string);
-    cout << container_to_string(*inputs) << endl;
-    for (symbol &word: *inputs)
+    for (symbol &word : *inputs)
     {
         nonterminals->insert({word, Nonterminal(word)});
     }
     cout << "Please enter the terminals: ";
     getline(stream, raw_string);
     inputs = string_to_vector(raw_string);
-    cout << container_to_string(*inputs) << endl;
-    for (symbol &word: *inputs)
+    for (symbol &word : *inputs)
     {
         terminals->insert(word);
     }
@@ -195,24 +193,24 @@ void Analyser::print_grammar() const
 {
     cout << "Grammar: " << endl;
     cout << "T:";
-    for (auto &t: *terminals)
+    for (auto &t : *terminals)
     {
         cout << " " << t;
     }
     cout << endl;
     cout << "N:";
-    for (auto &n: *nonterminals)
+    for (auto &n : *nonterminals)
     {
         cout << " " << n.first;
     }
     cout << endl;
     cout << "S: " << start_symbol << endl;
     cout << "Rules: " << endl;
-    for (auto &n: *nonterminals)
+    for (auto &n : *nonterminals)
     {
         bool is_first = true;
         cout << n.first << " -> ";
-        for (auto &r: *n.second.candidates)
+        for (auto &r : *n.second.candidates)
         {
             string rule_text;
             if (is_first)
@@ -323,10 +321,10 @@ void Analyser::calculate_firsts()
     while (need_update)
     {
         need_update = false;
-        for (auto &nit: *nonterminals)
+        for (auto &nit : *nonterminals)
         {
             TerminalSet temp;
-            for (Candidate &cit: *nit.second.candidates)
+            for (Candidate &cit : *nit.second.candidates)
             {
                 TerminalSet new_set = get_firsts(cit);
                 need_update = merge_set(*nit.second.firsts, new_set) || need_update;
@@ -365,11 +363,11 @@ void Analyser::add_candidates(CandidateList &candidates, Candidate prefix, Candi
 void Analyser::eliminate_empty()
 {
     cout << "Eliminating empty rules..." << endl;
-    for (auto &nit: *nonterminals)
+    for (auto &nit : *nonterminals)
     {
         CandidateList *old_candidates = nit.second.candidates;
         nit.second.candidates = new CandidateList;
-        for (Candidate &candidate: *old_candidates)
+        for (Candidate &candidate : *old_candidates)
         {
             Candidate prefix;
             add_candidates(*nit.second.candidates, prefix, candidate);
@@ -388,7 +386,7 @@ bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
     bool has_direct_recursion = false;
     symbol name = nonterminal.name;
     SymbolSet set;
-    for (Candidate &candidate: *nonterminal.candidates)
+    for (Candidate &candidate : *nonterminal.candidates)
     {
         set.insert(candidate[0]);
     }
@@ -405,7 +403,7 @@ bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
         }
         new_nonterminal.name = new_name;
         new_nonterminal.candidates->push_back({EMPTY_MARK});
-        for (Candidate &candidate: *old_candidates)
+        for (Candidate &candidate : *old_candidates)
         {
             if (candidate[0] == name)
             {
@@ -433,7 +431,7 @@ void Analyser::eliminate_recursion()
     {
         if (rnit->second.name != start_symbol)
         {
-            for (auto &lnit: *nonterminals)
+            for (auto &lnit : *nonterminals)
             {
                 if (lnit.second.name == start_symbol || lnit.second.name < rnit->second.name)
                 {
@@ -450,7 +448,7 @@ void Analyser::eliminate_recursion()
                                 cit = rcandidates->erase(cit);
                                 has_replacement = true;
                                 right_part.erase(right_part.begin());
-                                for (const Candidate &left_candidate: *lnit.second.candidates)
+                                for (const Candidate &left_candidate : *lnit.second.candidates)
                                 {
                                     Candidate new_candidate = left_candidate;
                                     new_candidate.insert(new_candidate.end(), right_part.begin(), right_part.end());
@@ -484,7 +482,7 @@ void Analyser::eliminate_common_prefix()
         nit->second.candidates = new CandidateList;
         PrefixMap map;
         int i = 0;
-        for (Candidate &candidate: *old_candidates)
+        for (Candidate &candidate : *old_candidates)
         {
             map.insert({candidate[0], i});
             i++;
@@ -537,13 +535,13 @@ void Analyser::calculate_follows()
     while (need_update)
     {
         need_update = false;
-        for (auto &nit: *nonterminals)
+        for (auto &nit : *nonterminals)
         {
             TerminalSet temp;
-            for (Candidate &cit: *nit.second.candidates)
+            for (Candidate &cit : *nit.second.candidates)
             {
                 int i = 1;
-                for (symbol &word: cit)
+                for (symbol &word : cit)
                 {
                     if (is_nonterminal(word))
                     {
@@ -575,16 +573,16 @@ void Analyser::calculate_follows()
 bool Analyser::build_table(bool no_error)
 {
     cout << "Building table..." << to_string(nonterminals->size()) << endl;
-    for (auto &nit: *nonterminals)
+    for (auto &nit : *nonterminals)
     {
         int i = 0;
         AnalyseTable *table = nit.second.table;
         cout << "Inserting rules for `" << nit.first << "`." << endl;
         int empty_index = -1;
-        for (Candidate &cit: *nit.second.candidates)
+        for (Candidate &cit : *nit.second.candidates)
         {
             TerminalSet new_set = get_firsts(cit);
-            for (Terminal const &t: new_set)
+            for (Terminal const &t : new_set)
             {
                 if (t == EMPTY_MARK)
                 {
@@ -615,7 +613,7 @@ bool Analyser::build_table(bool no_error)
         }
         if (empty_index != -1)
         {
-            for (Terminal const &follower: *nit.second.follows)
+            for (Terminal const &follower : *nit.second.follows)
             {
                 AnalyseTable::iterator tit = table->find(follower);
                 if (tit == table->end())
@@ -636,7 +634,7 @@ bool Analyser::build_table(bool no_error)
                 }
             }
         }
-        for (Terminal const &follower: *nit.second.follows)
+        for (Terminal const &follower : *nit.second.follows)
         {
             if (table->find(follower) == table->end())
             {
@@ -653,15 +651,15 @@ void Analyser::print_table() const
     const int column_width = 10;
     cout << "Analyse table:" << endl;
     cout << setw(5) << "Symbol";
-    for (const symbol &word: *terminals)
+    for (const symbol &word : *terminals)
     {
         cout << setw(column_width) << word;
     }
     cout << endl;
-    for (const auto &nit: *nonterminals)
+    for (const auto &nit : *nonterminals)
     {
         cout << setw(5) << nit.first;
-        for (const symbol &word: *terminals)
+        for (const symbol &word : *terminals)
         {
             string rule_text;
             if (nit.second.table->find(word) != nit.second.table->end())
@@ -694,7 +692,7 @@ void Analyser::print_table() const
 void Analyser::print_firsts() const
 {
     cout << "FIRST set:" << endl;
-    for (auto &nit: *nonterminals)
+    for (auto &nit : *nonterminals)
     {
         cout << nit.first << ":\t" << container_to_string(*nit.second.firsts) << endl;
     }
@@ -703,7 +701,7 @@ void Analyser::print_firsts() const
 void Analyser::print_follows() const
 {
     cout << "FOLLOW set:" << endl;
-    for (auto &nit: *nonterminals)
+    for (auto &nit : *nonterminals)
     {
         cout << nit.first << ":\t" << container_to_string(*nit.second.follows) << endl;
     }

@@ -32,7 +32,7 @@ const string COLUMN_DELIMITER = "\t";
 
 class Nonterminal
 {
-public:
+  public:
     Nonterminal(string name);
     Nonterminal(const Nonterminal *old_nonterminal);
     Nonterminal(const Nonterminal &old_nonterminal);
@@ -47,7 +47,7 @@ public:
 
 class Rule
 {
-public:
+  public:
     Rule();
     Rule(const Rule *rule);
     Rule(const Rule &rule);
@@ -60,7 +60,7 @@ using NonterminalTable = unordered_map<symbol, Nonterminal>;
 
 class Analyser
 {
-public:
+  public:
     Analyser();
     TerminalSet *terminals = nullptr;
     NonterminalTable *nonterminals = nullptr;
@@ -94,8 +94,8 @@ SymbolList *string_to_vector(const string &raw_string);
 bool merge_set(TerminalSet &destination, const TerminalSet &source);
 // return true if destination updates
 
-template<class T>
+template <class T>
 string container_to_string(T &container, string separator = " ", const int start_index = 0);
 
-template<class T>
+template <class T>
 string reversed_container_to_string(T &container, string separator = " ", const int start_index = 0);
