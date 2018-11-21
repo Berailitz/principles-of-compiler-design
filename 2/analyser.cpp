@@ -103,6 +103,7 @@ void Analyser::create_grammar(istream &stream)
     print_follows();
     if (build_table(true))
     {
+        cout << "LL(1) grammar without recursion or common prefix detected." << endl;
         print_table();
     }
     else
@@ -613,6 +614,7 @@ bool Analyser::build_table(bool no_error)
 
 void Analyser::print_table() const
 {
+    cout << "Analyse table:" << endl;
     cout << setw(5) << "Symbol";
     for (const symbol &word: *terminals)
     {
@@ -685,9 +687,11 @@ void Analyser::analyse(string code_text)
     string sentence = "";
     SymbolList *words = string_to_vector(code_text + " " + END_MARK);
     SymbolList::iterator wit = words->begin();
+    cout << endl;
+    cout << "Analysing:" << endl;
     stack.push_back(END_MARK);
     stack.push_back(start_symbol);
-    cout << endl << setw(5) << "No." << setw(15) << "Stack" << setw(20) << "Input" << setw(15) << "Sentence" << setw(40) << "Output" << endl;
+    cout << setw(5) << "No." << setw(15) << "Stack" << setw(20) << "Input" << setw(15) << "Sentence" << setw(40) << "Output" << endl;
     while (true)
     {
         symbol top = stack.back();
