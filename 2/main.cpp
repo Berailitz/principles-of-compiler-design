@@ -8,21 +8,11 @@ int main(int argc, char const *argv[])
     {
         stream.open(argv[1]);
         analyser.create_grammar(stream);
-    }
-    else
-    {
-        analyser.create_grammar(cin);
-    }
-    analyser.calculate_firsts();
-    analyser.calculate_follows();
-    analyser.build_table();
-    analyser.print_table();
-    if (argc == 2)
-    {
         analyser.receive_text(stream);
     }
     else
     {
+        analyser.create_grammar(cin);
         analyser.receive_text(cin);
     }
     cin.get();

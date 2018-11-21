@@ -33,8 +33,8 @@ string container_to_string(T &container, string separator, const int start_index
     return result;
 }
 
-Nonterminal::Nonterminal() : candidates(new CandidateList), firsts(new TerminalSet),
-    follows(new TerminalSet), table(new AnalyseTable)
+Nonterminal::Nonterminal(string name) : candidates(new CandidateList), firsts(new TerminalSet),
+    follows(new TerminalSet), table(new AnalyseTable), name(name)
 {
 }
 
@@ -62,6 +62,7 @@ void Nonterminal::initialize(const Nonterminal *old_nonterminal)
     firsts = new TerminalSet(*old_nonterminal->firsts);
     follows = new TerminalSet(*old_nonterminal->follows);
     table = new AnalyseTable(*old_nonterminal->table);
+    name = old_nonterminal->name;
 }
 
 Rule::Rule() : candidates(new CandidateList)
@@ -81,11 +82,28 @@ Rule::~Rule()
     delete candidates;
 }
 
-Analyser::Analyser() : terminals(new TerminalSet), nonterminals(new NonterminalTable)
+Analyser::Analyser() : terminals(new TerminalSet({END_MARK})), nonterminals(new NonterminalTable)
 {
 }
 
 void Analyser::create_grammar(istream &stream)
+{
+    receive_grammar(stream);
+    print_grammar();
+    calculate_firsts();
+    eliminate_empty();
+    print_grammar();
+    eliminate_recursion();
+    print_grammar();
+    eliminate_common_prefix();
+    print_grammar();
+    calculate_firsts();
+    calculate_follows();
+    build_table();
+    print_table();
+}
+
+void Analyser::receive_grammar(istream &stream)
 {
     string raw_string;
     SymbolList *inputs;
@@ -98,7 +116,7 @@ void Analyser::create_grammar(istream &stream)
     cout << container_to_string(*inputs) << endl;
     for (symbol &word: *inputs)
     {
-        nonterminals->insert({word, Nonterminal()});
+        nonterminals->insert({word, Nonterminal(word)});
     }
     cout << "Please enter the terminals: ";
     getline(stream, raw_string);
@@ -122,6 +140,11 @@ void Analyser::create_grammar(istream &stream)
         getline(stream, raw_string);
         cout << raw_string << endl;
     }
+    cout << endl;
+}
+
+void Analyser::print_grammar() const
+{
     cout << "Grammar: " << endl;
     cout << "T:";
     for (auto &t: *terminals)
@@ -140,7 +163,7 @@ void Analyser::create_grammar(istream &stream)
     for (auto &n: *nonterminals)
     {
         bool is_first = true;
-        cout << n.first << " ->";
+        cout << n.first << " -> ";
         for (auto &r: *n.second.candidates)
         {
             string rule_text;
@@ -274,12 +297,167 @@ void Analyser::calculate_firsts()
     }
 }
 
+void Analyser::add_candidates(CandidateList &candidates, Candidate prefix, Candidate postfix)
+{
+    if (postfix.size() == 0)
+    {
+        if (prefix.size() > 0)
+        {
+            candidates.push_back(prefix);
+        }
+    }
+    else
+    {
+        symbol next_word = postfix[0];
+        postfix.erase(postfix.begin());
+        if (is_nonterminal(next_word))
+        {
+            TerminalSet *firsts = nonterminals->at(next_word).firsts;
+            if (firsts->find(EMPTY_MARK) != firsts->end())
+            {
+                add_candidates(candidates, prefix, postfix);
+            }
+        }
+        prefix.push_back(next_word);
+        add_candidates(candidates, prefix, postfix);
+    }
+}
+
+void Analyser::eliminate_empty()
+{
+    for (auto &nit: *nonterminals)
+    {
+        CandidateList *old_candidates = nit.second.candidates;
+        nit.second.candidates = new CandidateList;
+        for (Candidate &candidate: *old_candidates)
+        {
+            Candidate prefix;
+            add_candidates(*nit.second.candidates, prefix, candidate);
+        }
+        delete old_candidates;
+        if (nit.first == start_symbol && nit.second.firsts->find(EMPTY_MARK) != nit.second.firsts->end())
+        {
+            nit.second.candidates->push_back({EMPTY_MARK});
+        }
+    }
+}
+
+bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
+{
+    bool has_direct_recursion = false;
+    symbol name = nonterminal.name;
+    SymbolSet set;
+    for (Candidate &candidate: *nonterminal.candidates)
+    {
+        set.insert(candidate[0]);
+    }
+    if (set.find(name) != set.end())
+    {
+        CandidateList *old_candidates = nonterminal.candidates;
+        nonterminal.candidates = new CandidateList;
+        Nonterminal new_nonterminal(name);
+        symbol new_name = name;
+        has_direct_recursion = true;
+        while (is_nonterminal(new_name))
+        {
+            new_name += "'";
+        }
+        new_nonterminal.name = new_name;
+        new_nonterminal.candidates->push_back({EMPTY_MARK});
+        for (Candidate &candidate: *old_candidates)
+        {
+            if (candidate[0] == name)
+            {
+                candidate.erase(candidate.begin());
+                candidate.push_back(new_name);
+                new_nonterminal.candidates->push_back(candidate);
+            }
+            else
+            {
+                candidate.push_back(new_name);
+                nonterminal.candidates->push_back(candidate);
+            }
+        }
+        nonterminals->insert({new_name, new_nonterminal});
+        delete old_candidates;
+    }
+    return has_direct_recursion;
+}
+
+void Analyser::eliminate_recursion()
+{
+    bool has_new_nonterminals = false;
+    cout << "Eliminating recursion..." << endl;
+    for (auto nit = nonterminals->begin(); nit != nonterminals->end(); nit++)
+    {
+        has_new_nonterminals = eliminate_direct_recursion(nit->second) || has_new_nonterminals;
+    }
+    cout << "Done." << endl;
+}
+
+void Analyser::eliminate_common_prefix()
+{
+    bool has_new_nonterminals = false;
+    cout << "Eliminating common prefix..." << endl;
+    for (auto nit = nonterminals->begin(); nit != nonterminals->end(); nit++)
+    {
+        has_new_nonterminals = false;
+        CandidateList *old_candidates = nit->second.candidates;
+        nit->second.candidates = new CandidateList;
+        PrefixMap map;
+        int i = 0;
+        for (Candidate &candidate: *old_candidates)
+        {
+            map.insert({candidate[0], i});
+            i++;
+        }
+        for (PrefixMap::iterator mit = map.begin(), end = map.end(); mit != end; mit = map.upper_bound(mit->first))
+        {
+            if (map.count(mit->first) == 1)
+            {
+                nit->second.candidates->push_back((*old_candidates)[mit->second]);
+            }
+            else
+            {
+                auto range = map.equal_range(mit->first);
+                symbol new_name = nit->first;
+                Nonterminal new_nonterminal(new_name);
+                while (is_nonterminal(new_name))
+                {
+                    new_name += "'";
+                }
+                new_nonterminal.name = new_name;
+                for (auto cit = range.first; cit != range.second; cit++)
+                {
+                    Candidate new_candidate = (*old_candidates)[cit->second];
+                    new_candidate.erase(new_candidate.begin());
+                    if (new_candidate.size() == 0)
+                    {
+                        new_candidate.push_back(EMPTY_MARK);
+                    }
+                    new_nonterminal.candidates->push_back(new_candidate);
+                }
+                nonterminals->insert({new_name, new_nonterminal});
+                has_new_nonterminals = true;
+                nit->second.candidates->push_back({mit->first, new_name});
+            }
+        }
+        if (has_new_nonterminals)
+        {
+            nit = nonterminals->begin();
+        }
+        delete old_candidates;
+    }
+    cout << "Done." << endl;
+}
+
 void Analyser::calculate_follows()
 {
     bool need_update = true;
     nonterminals->at(start_symbol).follows->insert(END_MARK);
     while (need_update)
     {
+        need_update = false;
         cout << "FOLLOW set:" << endl;
         for (auto &nit: *nonterminals)
         {
@@ -287,7 +465,6 @@ void Analyser::calculate_follows()
         }
         for (auto &nit: *nonterminals)
         {
-            need_update = false;
             TerminalSet temp;
             for (Candidate &cit: *nit.second.candidates)
             {
@@ -398,9 +575,13 @@ void Analyser::print_table() const
 void Analyser::receive_text(istream &stream)
 {
     string raw_string;
-    cout << "Please enter a piece of text to analyse: ";
+    cout << "Please enter a piece of text to analyse, type `$` to exit: ";
     getline(stream, raw_string);
-    analyse(raw_string);
+    while (raw_string.size() > 0 && raw_string != END_MARK)
+    {
+        analyse(raw_string);
+        getline(stream, raw_string);
+    }
 }
 
 void Analyser::analyse(string code_text)
@@ -456,13 +637,16 @@ void Analyser::analyse(string code_text)
                         Candidate candidate = nonterminal.candidates->at(ait->second);
                         string candidate_text = container_to_string(candidate);
                         stack.pop_back();
-                        for (Candidate::reverse_iterator rit = candidate.rbegin(); rit != candidate.rend(); rit++)
+                        if (candidate_text != EMPTY_MARK)
                         {
-                            stack.push_back(*rit);
-                        }
-                        if (candidate_text.size() == 0)
-                        {
-                            candidate_text = EMPTY_MARK;
+                            for (Candidate::reverse_iterator rit = candidate.rbegin(); rit != candidate.rend(); rit++)
+                            {
+                                stack.push_back(*rit);
+                            }
+                            if (candidate_text.size() == 0)
+                            {
+                                candidate_text = EMPTY_MARK;
+                            }
                         }
                         cout << top << PRODUCTION_MARK << candidate_text;
                     }

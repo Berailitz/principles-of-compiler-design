@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <set>
+#include <unordered_set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -14,8 +14,10 @@ using symbol = string;
 using Terminal = symbol;
 using Candidate = vector<symbol>;
 using SymbolList = vector<symbol>;
+using SymbolSet = unordered_set<symbol>;
+using PrefixMap = unordered_multimap<symbol, int>;
 using CandidateList = vector<Candidate>;
-using TerminalSet = set<Terminal>;
+using TerminalSet = unordered_set<Terminal>;
 using AnalyseTable = unordered_map<Terminal, int>;
 using SymbolStack = vector<Terminal>;
 
@@ -30,7 +32,7 @@ const string COLUMN_DELIMITER = "\t";
 class Nonterminal
 {
 public:
-    Nonterminal();
+    Nonterminal(string name);
     Nonterminal(const Nonterminal *old_nonterminal);
     Nonterminal(const Nonterminal &old_nonterminal);
     ~Nonterminal();
@@ -63,12 +65,19 @@ public:
     NonterminalTable *nonterminals = nullptr;
     symbol start_symbol;
     void create_grammar(istream &stream);
+    void receive_grammar(istream &stream);
+    void print_grammar() const;
     Rule *build_rule(string grammar_text);
     void add_rule(Rule &new_rule);
     bool is_nonterminal(symbol word) const;
     TerminalSet get_firsts(symbol word) const;
     TerminalSet get_firsts(Candidate &candidate) const;
     void calculate_firsts();
+    void add_candidates(CandidateList &candidates, Candidate prefix, Candidate postfix);
+    void eliminate_empty();
+    bool eliminate_direct_recursion(Nonterminal &nonterminal);
+    void eliminate_recursion();
+    void eliminate_common_prefix();
     void calculate_follows();
     void build_table();
     void print_table() const;

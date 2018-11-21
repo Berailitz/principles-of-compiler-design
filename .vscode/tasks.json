@@ -15,7 +15,19 @@
             ],
         },
         {
-            "label": "clang-cl",
+            "label": "clang-cl-current",
+            "command": "clang-cl",
+            "args": [
+                "-Z7",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-std:c++14",
+                "/EHa"
+            ],
+        },
+        {
+            "label": "clang-cl-project",
             "command": "clang-cl",
             "args": [
                 "-Z7",
