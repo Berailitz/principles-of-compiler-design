@@ -1,0 +1,80 @@
+%!TEX program = xelatex
+\documentclass[UTF8]{ctexart}
+    \usepackage{amsmath}
+    \usepackage{geometry}
+	\usepackage{graphicx}
+	\usepackage[utf8]{inputenc}
+	\usepackage{listings}
+	\usepackage{url}
+	\usepackage{verbatim}
+	
+	\graphicspath{ {./images/} }
+
+    \title{$LL(1)$语法词法分析程序说明文档}
+    \author{2016211305班 \ 熊光正 （学号：2016211249）}
+    \date{\today}
+\begin{document}
+\lstset{numbers=left,frame=single}
+\maketitle
+\tableofcontents
+\clearpage
+\section{概述}
+本程序从用户输入或指定的文本文件读取文法四元组，依据算法$4.2$等检查、改造算法，构建$FIRST$集、$FOLLOW$集和预测分析表，
+依据算法$4.1$等分析输入的句子，并在必要时进行错误处理。
+\section{数据结构}
+程序使用的数据结构如下：\\
+\begin{table}[!h]
+    \centering
+    \caption{数据结构表}
+    \begin{tabular}{|c|c|c|}
+    \hline
+    逻辑结构 & 数据结构 & 备注 \\ \hline
+    终结符  &  $Terminal$ & 即$string$  \\ \hline
+    非终结符  & $Nonterminal$  &   \\ \hline
+    文法规则 & $Rule$  &   \\ \hline
+    非终结符表 & $unordered\_map<symbol, Nonterminal>$  &   \\ \hline
+    候选式 & $vector<symbol>$  & $symbol$泛指所有符号  \\ \hline
+    分析表中的行 & $unordered_map<Terminal, int>$  & 整数表示对应候选式的序号  \\ \hline
+    符号栈 & $vector<Terminal>$  &   \\ \hline
+    \end{tabular}
+    \end{table}
+\\
+\section{程序功能}
+\subsection{识别文法的形式定义}
+程序从字符串识别文法，将其转换成内部表示和的非终结符表、终结符表、开始符号和产生式列表。
+\subsection{检查并改造文法}
+程序检查识别的文法是不是$LL(1)$文法，若不是，则尝试改造文法，即消除空产生式、消除直接和间接左递归、提取公共左因子。
+\subsection{构建预测分析表}
+程序依次构建$FIRST$集和$FOLLOW$集，并依次建立带同步标记的预测分析表。
+\subsection{分析输入的句子}
+程序依据上述预测分析表，分析输入的句子，若检测到错误，进行错误处理。
+\section{程序运行流程及算法}
+\subsection{语法构建}
+程序将输入的字符串以空格分隔成单词符号串，依据该单词符号串识别其中定义的$ll(1)$文法，包括非终结符、终结符、开始符号和产生式列表。
+程序尝试
+\subsection{语法分析}
+
+\section{输入输出说明}
+程序可以交互式地从控制台接受用户输入，也可在运行时指定文件名，从文件自动读入，并输出至控制台。
+\subsection{交互式运行}
+\subsection{从文件读取输入}
+本程序支持在$64$位中文$Windows \ 10$环境下运行，没有其他运行时依赖。
+\subsection{输入要求}
+\section{开发环境}
+\section{运行环境}
+\section{测试样例说明}
+\subsection{合法源文件样例}
+\subsubsection{基础测试样例：$legal\_1.cpp$}
+本样例测试标识符、科学记数法或非科学记数法表示的$10$进制整数、浮点数、基本运算符和界符的识别及注释的处理等基本要求，源代码中不含词法错误。
+\section{备注}
+\begin{enumerate}
+	\item 词法来源：编译器$Clang++$上进行的测试（版本号：$3.9.1$）和互联网（$cppreference.com$等）；
+	\item 假设字符均合法;
+	\item 将所有$($, $)$, $[$, $]$, $\{$, $\}$, $,$视为界符，即
+	      \begin{enumerate}
+		      \item 将$[index]$中的括号视为界符，数字视为常数、标识符或表达式
+		      \item 将$(type)$中的括号视为界符，类型视为关键字或标识符
+		      \item 将${value1, value2}$中的$,$视为界符
+	      \end{enumerate}
+\end{enumerate}
+\end{document}

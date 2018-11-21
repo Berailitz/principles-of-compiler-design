@@ -33,7 +33,7 @@
                 "-Z7",
                 "${fileDirname}\\main.cpp",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "${fileDirname}\\main.exe",
                 "-std:c++14",
                 "/EHa"
             ],

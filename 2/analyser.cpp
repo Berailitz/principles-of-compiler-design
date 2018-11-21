@@ -131,11 +131,13 @@ void Analyser::create_grammar(istream &stream)
     print_follows();
     if (build_table(true))
     {
+        // 若文法是LL(1)文法，即成功构建分析表
         cout << "LL(1) grammar without recursion or common prefix detected." << endl;
         print_table();
     }
     else
     {
+        // 若未经过改造的文法不是LL(1)文法，即构建分析表失败
         clear_grammar();
         calculate_firsts();
         eliminate_empty();
@@ -274,6 +276,7 @@ void Analyser::add_rule(Rule &new_rule)
     Nonterminal *word = &nonterminals->find(new_rule.nonterminal)->second;
     for (Candidate &it : (*new_rule.candidates))
     {
+        // 遍历插入规则中定义的候选式
         word->candidates->push_back(it);
     }
     cout << to_string(word->candidates->size()) << " rules added." << endl;
@@ -307,6 +310,7 @@ TerminalSet Analyser::get_firsts(Candidate &candidate) const
         TerminalSet current_set = get_firsts(candidate[0]);
         if (current_set.find(EMPTY_MARK) != current_set.end() && candidate.size() > 1)
         {
+            // 若存在空产生式，递归合并后缀字符串的FIRST集
             Candidate new_candidate(candidate.begin() + 1, candidate.end());
             merge_set(current_set, get_firsts(new_candidate));
         }
@@ -326,6 +330,7 @@ void Analyser::calculate_firsts()
             TerminalSet temp;
             for (Candidate &cit : *nit.second.candidates)
             {
+                // 遍历合并各候选式的FIRST集
                 TerminalSet new_set = get_firsts(cit);
                 need_update = merge_set(*nit.second.firsts, new_set) || need_update;
             }
@@ -352,6 +357,7 @@ void Analyser::add_candidates(CandidateList &candidates, Candidate prefix, Candi
             TerminalSet *firsts = nonterminals->at(next_word).firsts;
             if (firsts->find(EMPTY_MARK) != firsts->end())
             {
+                // 存在空产生式，递归计算其后缀的FIRST集
                 add_candidates(candidates, prefix, postfix);
             }
         }
@@ -369,12 +375,14 @@ void Analyser::eliminate_empty()
         nit.second.candidates = new CandidateList;
         for (Candidate &candidate : *old_candidates)
         {
+            // 遍历消除各个候选式中的空产生式
             Candidate prefix;
             add_candidates(*nit.second.candidates, prefix, candidate);
         }
         delete old_candidates;
         if (nit.first == start_symbol && nit.second.firsts->find(EMPTY_MARK) != nit.second.firsts->end())
         {
+            // 存在空产生式，和插入之
             nit.second.candidates->push_back({EMPTY_MARK});
         }
     }
@@ -392,8 +400,9 @@ bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
     }
     if (set.find(name) != set.end())
     {
+        // 存在直接左递归
         CandidateList *old_candidates = nonterminal.candidates;
-        nonterminal.candidates = new CandidateList;
+        nonterminal.candidates = new CandidateList; // 添加一个非终结符
         Nonterminal new_nonterminal(name);
         symbol new_name = name;
         has_direct_recursion = true;
@@ -405,6 +414,7 @@ bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
         new_nonterminal.candidates->push_back({EMPTY_MARK});
         for (Candidate &candidate : *old_candidates)
         {
+            // 遍历各候选式，检查并消除左递归
             if (candidate[0] == name)
             {
                 candidate.erase(candidate.begin());
@@ -426,24 +436,28 @@ bool Analyser::eliminate_direct_recursion(Nonterminal &nonterminal)
 void Analyser::eliminate_recursion()
 {
     bool has_new_nonterminals = false;
-    cout << "Eliminating recursion..." << endl;
+    cout << "Eliminating all recursions..." << endl;
     for (auto rnit = nonterminals->begin(); rnit != nonterminals->end(); rnit++)
     {
+        // 遍历各非终结符
         if (rnit->second.name != start_symbol)
         {
             for (auto &lnit : *nonterminals)
             {
+                // 检查先后次序
                 if (lnit.second.name == start_symbol || lnit.second.name < rnit->second.name)
                 {
                     bool has_replacement = true;
                     CandidateList *rcandidates = rnit->second.candidates;
                     while (has_replacement)
                     {
+                        // 循环检查新插入的非终结符
                         has_replacement = false;
                         for (CandidateList::iterator cit = rcandidates->begin(); cit != rcandidates->end(); cit++)
                         {
                             if (cit->at(0) == lnit.second.name)
                             {
+                                // 存在左递归
                                 Candidate right_part = *cit;
                                 cit = rcandidates->erase(cit);
                                 has_replacement = true;
@@ -482,6 +496,7 @@ void Analyser::eliminate_common_prefix()
         nit->second.candidates = new CandidateList;
         PrefixMap map;
         int i = 0;
+        // 构建左因子集
         for (Candidate &candidate : *old_candidates)
         {
             map.insert({candidate[0], i});
@@ -495,9 +510,10 @@ void Analyser::eliminate_common_prefix()
             }
             else
             {
+                // 存在公共左因子
                 auto range = map.equal_range(mit->first);
                 symbol new_name = nit->first;
-                Nonterminal new_nonterminal(new_name);
+                Nonterminal new_nonterminal(new_name); // 插入新终结符
                 while (is_nonterminal(new_name))
                 {
                     new_name += "'";
@@ -534,6 +550,7 @@ void Analyser::calculate_follows()
     nonterminals->at(start_symbol).follows->insert(END_MARK);
     while (need_update)
     {
+        // 循环计算FOLLOW集
         need_update = false;
         for (auto &nit : *nonterminals)
         {
@@ -547,6 +564,7 @@ void Analyser::calculate_follows()
                     {
                         if (i == cit.size())
                         {
+                            // 合并FOLLOW集
                             need_update = merge_set(*nonterminals->at(word).follows, *nit.second.follows) || need_update;
                         }
                         else
@@ -556,6 +574,7 @@ void Analyser::calculate_follows()
                             TerminalSet::iterator tit = new_set.find(EMPTY_MARK);
                             if (tit != new_set.end())
                             {
+                                // 存在空产生式
                                 new_set.erase(tit);
                                 merge_set(new_set, *nit.second.follows);
                             }
@@ -586,6 +605,7 @@ bool Analyser::build_table(bool no_error)
             {
                 if (t == EMPTY_MARK)
                 {
+                    // 存在空产生式
                     empty_index = i;
                 }
                 else
@@ -613,6 +633,7 @@ bool Analyser::build_table(bool no_error)
         }
         if (empty_index != -1)
         {
+            // 存在空产生式
             for (Terminal const &follower : *nit.second.follows)
             {
                 AnalyseTable::iterator tit = table->find(follower);
@@ -634,6 +655,7 @@ bool Analyser::build_table(bool no_error)
                 }
             }
         }
+        // 插入同步符号
         for (Terminal const &follower : *nit.second.follows)
         {
             if (table->find(follower) == table->end())
@@ -674,6 +696,7 @@ void Analyser::print_table() const
                     rule_text = container_to_string(nit.second.candidates->at(rule_index), "");
                     if (rule_text.size() == 0)
                     {
+                        // 空产生式
                         rule_text = "@";
                     }
                 }
@@ -681,6 +704,7 @@ void Analyser::print_table() const
             }
             else
             {
+                // 无此表项，即为错误项
                 rule_text = "--";
             }
             cout << setw(column_width) << rule_text;
@@ -715,6 +739,7 @@ void Analyser::receive_text(istream &stream)
     while (raw_string.size() > 0 && raw_string != END_MARK)
     {
         analyse(raw_string);
+        cout << "Please enter a piece of text to analyse, type `$` to exit: ";
         getline(stream, raw_string);
     }
 }
@@ -754,6 +779,7 @@ void Analyser::analyse(string code_text)
         {
             if (is_nonterminal(top))
             {
+                // 栈顶为非终结符
                 Nonterminal nonterminal = nonterminals->at(top);
                 AnalyseTable::iterator ait = nonterminal.table->find(*wit);
                 if (ait == nonterminal.table->end())
@@ -773,7 +799,7 @@ void Analyser::analyse(string code_text)
                     {
                         Candidate candidate = nonterminal.candidates->at(ait->second);
                         string candidate_text = container_to_string(candidate);
-                        stack.pop_back();
+                        stack.pop_back(); // 弹出栈顶元素
                         if (candidate_text != EMPTY_MARK)
                         {
                             for (Candidate::reverse_iterator rit = candidate.rbegin(); rit != candidate.rend(); rit++)
@@ -791,12 +817,13 @@ void Analyser::analyse(string code_text)
             }
             else
             {
+                // 栈顶为终结符
                 if (*wit == top)
                 {
                     sentence += top;
-                    stack.pop_back();
+                    stack.pop_back(); // 弹出栈顶元素
                     cout << "Match";
-                    wit++;
+                    wit++; // 指针前移
                 }
                 else
                 {
