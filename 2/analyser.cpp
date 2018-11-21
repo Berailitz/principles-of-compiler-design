@@ -388,9 +388,46 @@ void Analyser::eliminate_recursion()
 {
     bool has_new_nonterminals = false;
     cout << "Eliminating recursion..." << endl;
-    for (auto nit = nonterminals->begin(); nit != nonterminals->end(); nit++)
+    for (auto rnit = nonterminals->begin(); rnit != nonterminals->end(); rnit++)
     {
-        has_new_nonterminals = eliminate_direct_recursion(nit->second) || has_new_nonterminals;
+        if (rnit->second.name != start_symbol)
+        {
+            for (auto &lnit: *nonterminals)
+            {
+                if (lnit.second.name == start_symbol || lnit.second.name < rnit->second.name)
+                {
+                    bool has_replacement = true;
+                    CandidateList *rcandidates = rnit->second.candidates;
+                    while (has_replacement)
+                    {
+                        has_replacement = false;
+                        for (CandidateList::iterator cit = rcandidates->begin(); cit != rcandidates->end(); cit++)
+                        {
+                            if (cit->at(0) == lnit.second.name)
+                            {
+                                Candidate right_part = *cit;
+                                cit = rcandidates->erase(cit);
+                                has_replacement = true;
+                                right_part.erase(right_part.begin());
+                                for (const Candidate &left_candidate: *lnit.second.candidates)
+                                {
+                                    Candidate new_candidate = left_candidate;
+                                    new_candidate.insert(new_candidate.end(), right_part.begin(), right_part.end());
+                                    rcandidates->push_back(new_candidate);
+                                }
+                                cit = rcandidates->begin();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        has_new_nonterminals = eliminate_direct_recursion(rnit->second) || has_new_nonterminals;
+        if (has_new_nonterminals)
+        {
+            rnit = nonterminals->begin();
+            has_new_nonterminals = false;
+        }
     }
     cout << "Done." << endl;
 }
@@ -538,24 +575,24 @@ void Analyser::build_table()
 
 void Analyser::print_table() const
 {
+    cout << setw(5) << "Symbol";
     for (const symbol &word: *terminals)
     {
-        cout << COLUMN_DELIMITER << word;
+        cout << setw(15) << word;
     }
     cout << endl;
     for (const auto &nit: *nonterminals)
     {
-        cout << nit.first;
+        cout << setw(5) << nit.first;
         for (const symbol &word: *terminals)
         {
-            cout << COLUMN_DELIMITER;
             if (nit.second.table->find(word) != nit.second.table->end())
             {
                 string rule_text;
                 int rule_index = nit.second.table->at(word);
                 if (rule_index == -1)
                 {
-                    cout << SYNCH_MARK;
+                    rule_text = SYNCH_MARK;
                 }
                 else
                 {
@@ -564,8 +601,9 @@ void Analyser::print_table() const
                     {
                         rule_text = "@";
                     }
-                    cout << nit.first << PRODUCTION_MARK << rule_text;
                 }
+                rule_text = nit.first + PRODUCTION_MARK + rule_text;
+                cout << setw(15) << rule_text;
             }
         }
         cout << endl;
@@ -593,13 +631,13 @@ void Analyser::analyse(string code_text)
     SymbolList::iterator wit = words->begin();
     stack.push_back(END_MARK);
     stack.push_back(start_symbol);
-    cout << endl << "No.\tStack\tInput\tSentence\tOutput" << endl;
+    cout << endl << setw(5) << "No." << setw(15) << "Stack" << setw(20) << "Input" << setw(15) << "Sentence" << setw(40) << "Output" << endl;
     while (true)
     {
         symbol top = stack.back();
-        cout << to_string(i) << "\t" << container_to_string(stack, "") << "\t";
-        cout << container_to_string(*words, "", wit - words->begin()) <<  "\t";
-        cout << sentence << container_to_string(stack, "", 1) <<  "\t";
+        cout << setw(5) << to_string(i) << setw(15) << container_to_string(stack, "");
+        cout << setw(20) << container_to_string(*words, "", wit - words->begin());
+        cout << setw(15) << sentence << container_to_string(stack, "", 1) << setw(40);
         if (top == END_MARK)
         {
             if (*wit == END_MARK)
