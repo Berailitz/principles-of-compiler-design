@@ -33,6 +33,23 @@ string container_to_string(T &container, string separator, const int start_index
     return result;
 }
 
+template<class T>
+string reversed_container_to_string(T &container, string separator, const int start_index)
+{
+    string result = "";
+    if (container.size() > start_index)
+    {
+        auto it = container.rbegin();
+        result = *it;
+        it++;
+        for (; it + 1 != container.rend(); it++)
+        {
+            result += (separator + *it);
+        }
+    }
+    return result;
+}
+
 Nonterminal::Nonterminal(string name) : candidates(new CandidateList), firsts(new TerminalSet),
     follows(new TerminalSet), table(new AnalyseTable), name(name)
 {
@@ -93,6 +110,17 @@ void Analyser::raise_error(string message)
     exit(1);
 }
 
+void Analyser::clear_grammar()
+{
+    for (auto &n: *nonterminals)
+    {
+        delete n.second.table;
+        n.second.table = new AnalyseTable();
+        n.second.firsts = new TerminalSet();
+        n.second.follows = new TerminalSet();
+    }
+}
+
 void Analyser::create_grammar(istream &stream)
 {
     receive_grammar(stream);
@@ -108,6 +136,8 @@ void Analyser::create_grammar(istream &stream)
     }
     else
     {
+        clear_grammar();
+        calculate_firsts();
         eliminate_empty();
         print_grammar();
         eliminate_recursion();
@@ -118,7 +148,7 @@ void Analyser::create_grammar(istream &stream)
         print_firsts();
         calculate_follows();
         print_follows();
-        build_table();
+        build_table(false);
         print_table();
     }
 }
@@ -544,11 +574,13 @@ void Analyser::calculate_follows()
 
 bool Analyser::build_table(bool no_error)
 {
-    cout << "Building table..." << endl;
+    cout << "Building table..." << to_string(nonterminals->size()) << endl;
     for (auto &nit: *nonterminals)
     {
         int i = 0;
         AnalyseTable *table = nit.second.table;
+        cout << "Inserting rules for `" << nit.first << "`." << endl;
+        int empty_index = -1;
         for (Candidate &cit: *nit.second.candidates)
         {
             TerminalSet new_set = get_firsts(cit);
@@ -556,26 +588,7 @@ bool Analyser::build_table(bool no_error)
             {
                 if (t == EMPTY_MARK)
                 {
-                    for (Terminal const &follower: *nit.second.follows)
-                    {
-                        AnalyseTable::iterator tit = table->find(follower);
-                        if (tit == table->end())
-                        {
-                            table->insert({follower, i});
-                        }
-                        else
-                        {
-                            if (no_error)
-                            {
-                                cout << "Try again." << endl;
-                                return false;
-                            }
-                            else
-                            {
-                                raise_error("ERROR: Non-LL(1) grammar detected.");
-                            }
-                        }
-                    }
+                    empty_index = i;
                 }
                 else
                 {
@@ -600,6 +613,29 @@ bool Analyser::build_table(bool no_error)
             }
             i++;
         }
+        if (empty_index != -1)
+        {
+            for (Terminal const &follower: *nit.second.follows)
+            {
+                AnalyseTable::iterator tit = table->find(follower);
+                if (tit == table->end())
+                {
+                    table->insert({follower, empty_index});
+                }
+                else
+                {
+                    if (no_error)
+                    {
+                        cout << "Try again." << endl;
+                        return false;
+                    }
+                    else
+                    {
+                        raise_error("ERROR: Non-LL(1) grammar detected.");
+                    }
+                }
+            }
+        }
         for (Terminal const &follower: *nit.second.follows)
         {
             if (table->find(follower) == table->end())
@@ -614,11 +650,12 @@ bool Analyser::build_table(bool no_error)
 
 void Analyser::print_table() const
 {
+    const int column_width = 10;
     cout << "Analyse table:" << endl;
     cout << setw(5) << "Symbol";
     for (const symbol &word: *terminals)
     {
-        cout << setw(15) << word;
+        cout << setw(column_width) << word;
     }
     cout << endl;
     for (const auto &nit: *nonterminals)
@@ -626,9 +663,9 @@ void Analyser::print_table() const
         cout << setw(5) << nit.first;
         for (const symbol &word: *terminals)
         {
+            string rule_text;
             if (nit.second.table->find(word) != nit.second.table->end())
             {
-                string rule_text;
                 int rule_index = nit.second.table->at(word);
                 if (rule_index == -1)
                 {
@@ -642,9 +679,13 @@ void Analyser::print_table() const
                         rule_text = "@";
                     }
                 }
-                rule_text = nit.first + PRODUCTION_MARK + rule_text;
-                cout << setw(15) << rule_text;
+                // rule_text = nit.first + PRODUCTION_MARK + rule_text;
             }
+            else
+            {
+                rule_text = "--";
+            }
+            cout << setw(column_width) << rule_text;
         }
         cout << endl;
     }
@@ -697,7 +738,7 @@ void Analyser::analyse(string code_text)
         symbol top = stack.back();
         cout << setw(5) << to_string(i) << setw(15) << container_to_string(stack, "");
         cout << setw(20) << container_to_string(*words, "", wit - words->begin());
-        cout << setw(15) << sentence << container_to_string(stack, "", 1) << setw(40);
+        cout << setw(15) << sentence << reversed_container_to_string(stack, "", 1) << setw(40);
         if (top == END_MARK)
         {
             if (*wit == END_MARK)

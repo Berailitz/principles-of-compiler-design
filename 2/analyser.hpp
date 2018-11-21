@@ -66,6 +66,7 @@ public:
     NonterminalTable *nonterminals = nullptr;
     symbol start_symbol;
     void raise_error(string message);
+    void clear_grammar();
     void create_grammar(istream &stream);
     void receive_grammar(istream &stream);
     void print_grammar() const;
@@ -95,3 +96,6 @@ bool merge_set(TerminalSet &destination, const TerminalSet &source);
 
 template<class T>
 string container_to_string(T &container, string separator = " ", const int start_index = 0);
+
+template<class T>
+string reversed_container_to_string(T &container, string separator = " ", const int start_index = 0);
