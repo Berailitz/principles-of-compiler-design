@@ -65,6 +65,7 @@ public:
     TerminalSet *terminals = nullptr;
     NonterminalTable *nonterminals = nullptr;
     symbol start_symbol;
+    void raise_error(string message);
     void create_grammar(istream &stream);
     void receive_grammar(istream &stream);
     void print_grammar() const;

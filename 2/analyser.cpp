@@ -86,6 +86,13 @@ Analyser::Analyser() : terminals(new TerminalSet({END_MARK})), nonterminals(new 
 {
 }
 
+void Analyser::raise_error(string message)
+{
+    cout << message << endl;
+    cin.get();
+    exit(1);
+}
+
 void Analyser::create_grammar(istream &stream)
 {
     receive_grammar(stream);
@@ -544,6 +551,7 @@ void Analyser::build_table()
     for (auto &nit: *nonterminals)
     {
         int i = 0;
+        AnalyseTable *table = nit.second.table;
         for (Candidate &cit: *nit.second.candidates)
         {
             TerminalSet new_set = get_firsts(cit);
@@ -553,21 +561,37 @@ void Analyser::build_table()
                 {
                     for (Terminal const &follower: *nit.second.follows)
                     {
-                        nit.second.table->insert({follower, i});
+                        AnalyseTable::iterator tit = table->find(follower);
+                        if (tit == table->end())
+                        {
+                            table->insert({follower, i});
+                        }
+                        else
+                        {
+                            raise_error("ERROR: Non-LL(1) grammar detected.");
+                        }
                     }
                 }
                 else
                 {
-                    nit.second.table->insert({t, i});
+                    AnalyseTable::iterator tit = table->find(t);
+                    if (tit == table->end())
+                    {
+                        table->insert({t, i});
+                    }
+                    else
+                    {
+                        raise_error("ERROR: Non-LL(1) grammar detected.");
+                    }
                 }
             }
             i++;
         }
         for (Terminal const &follower: *nit.second.follows)
         {
-            if (nit.second.table->find(follower) == nit.second.table->end())
+            if (table->find(follower) == table->end())
             {
-                nit.second.table->insert({follower, SYNCH_MARK_INDEX});
+                table->insert({follower, SYNCH_MARK_INDEX});
             }
         }
     }

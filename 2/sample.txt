@@ -1,9 +1,9 @@
-E T F
-+ * ( ) id
-E
-E -> E + T | T
-T -> T * F | F
-F -> ( E ) | id
+Q R S
+a b c
+R
+R -> S a | a
+Q -> R b | b
+S -> Q c | c
 $
 id * + id * id
 $
