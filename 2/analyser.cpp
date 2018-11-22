@@ -161,7 +161,7 @@ void Analyser::receive_grammar(istream &stream)
     SymbolList *inputs;
     Rule *rule;
     char temp;
-    cout << "Note: all words should be separated by space, end with line break." << endl;
+    cout << "Note: all words should be separated by space, all parameters should end with a line break." << endl;
     cout << "Please enter the non-terminals: ";
     getline(stream, raw_string);
     inputs = string_to_vector(raw_string);
@@ -179,7 +179,7 @@ void Analyser::receive_grammar(istream &stream)
     cout << "Please enter the start symbol: ";
     stream >> start_symbol;
     getline(stream, raw_string);
-    cout << "Please enter the rules, ome per line, enter `$` to exit:" << endl;
+    cout << "Please enter the rules, ome per line, enter `$` to finish:" << endl;
     getline(stream, raw_string);
     while (raw_string != "$")
     {
@@ -670,7 +670,7 @@ bool Analyser::build_table(bool no_error)
 
 void Analyser::print_table() const
 {
-    const int column_width = 10;
+    const int column_width = 9;
     cout << "Analyse table:" << endl;
     cout << setw(5) << "Symbol";
     for (const symbol &word : *terminals)
@@ -752,16 +752,16 @@ void Analyser::analyse(string code_text)
     SymbolList *words = string_to_vector(code_text + " " + END_MARK);
     SymbolList::iterator wit = words->begin();
     cout << endl;
-    cout << "Analysing:" << endl;
+    cout << "Analysing `" << code_text << "`..." << endl;
     stack.push_back(END_MARK);
     stack.push_back(start_symbol);
-    cout << setw(5) << "No." << setw(15) << "Stack" << setw(20) << "Input" << setw(15) << "Sentence" << setw(40) << "Output" << endl;
+    cout << setw(8) << "No." << setw(25) << "Stack" << setw(25) << "Input" << setw(30) << "Sentence" << setw(40) << "Output" << endl;
     while (true)
     {
         symbol top = stack.back();
-        cout << setw(5) << to_string(i) << setw(15) << container_to_string(stack, "");
-        cout << setw(20) << container_to_string(*words, "", wit - words->begin());
-        cout << setw(15) << sentence << reversed_container_to_string(stack, "", 1) << setw(40);
+        cout << setw(8) << to_string(i) << setw(25) << container_to_string(stack, "");
+        cout << setw(25) << container_to_string(*words, "", wit - words->begin());
+        cout << setw(30) << sentence << reversed_container_to_string(stack, "", 1) << setw(40);
         if (top == END_MARK)
         {
             if (*wit == END_MARK)
