@@ -8,6 +8,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <windows.h>
+
+#pragma comment(lib, "user32")
 
 using namespace std;
 

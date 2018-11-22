@@ -755,13 +755,13 @@ void Analyser::analyse(string code_text)
     cout << "Analysing `" << code_text << "`..." << endl;
     stack.push_back(END_MARK);
     stack.push_back(start_symbol);
-    cout << setw(8) << "No." << setw(25) << "Stack" << setw(25) << "Input" << setw(30) << "Sentence" << setw(40) << "Output" << endl;
+    cout << setw(5) << "No." << setw(35) << "Stack" << setw(45) << "Input" << setw(45) << "Sentence" << setw(25) << "Output" << endl;
     while (true)
     {
         symbol top = stack.back();
-        cout << setw(8) << to_string(i) << setw(25) << container_to_string(stack, "");
-        cout << setw(25) << container_to_string(*words, "", wit - words->begin());
-        cout << setw(30) << sentence << reversed_container_to_string(stack, "", 1) << setw(40);
+        cout << setw(5) << to_string(i) << setw(35) << container_to_string(stack, "");
+        cout << setw(45) << container_to_string(*words, "", wit - words->begin());
+        cout << setw(45) << sentence << reversed_container_to_string(stack, "", 1) << setw(25);
         if (top == END_MARK)
         {
             if (*wit == END_MARK)
@@ -771,7 +771,7 @@ void Analyser::analyse(string code_text)
             }
             else
             {
-                cout << "ERROR: end of string expected.";
+                cout << "FINISHED: with unexpected word(s).";
                 break;
             }
         }

@@ -4,6 +4,7 @@ int main(int argc, char const *argv[])
 {
     ifstream stream;
     Analyser analyser;
+    ShowWindow(GetConsoleWindow(), SW_MAXIMIZE); // 最大化窗口
     if (argc == 2)
     {
         // 使用文件输入
