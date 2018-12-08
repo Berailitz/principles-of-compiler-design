@@ -1,0 +1,9 @@
+Q R S
+a b c
+R
+Q -> R a | a
+R -> S b | b
+S -> Q c | c
+$
+acb
+$
