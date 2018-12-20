@@ -20,16 +20,16 @@ enum ActionType
     GotoActionType,
 };
 
-using DFAState = int;
+using DFAState = int;                                           // DFA的状态
 using symbol = string;                                          // 字符，包含终结符与非终结符
 const symbol END_MARK = "$";                                    // 表示终止符
 const symbol EMPTY_SYMBOL = "-";                                // 符号栈占位符
 using SymbolList = deque<symbol>;                               // 表示若干符号组成的字符串
 using SymbolStack = vector<symbol>;                             // 表示符号栈
 using StateStack = vector<DFAState>;                            // 表示状态栈
-using ValStack = vector<int>;                                   // 表示属性栈
-const int EMPTY_VAL = 0;                                        // 属性栈占位符
-using AnalyseAction = pair<ActionType, int>;                    // 表示分析表中的一个动作
+using ValStack = vector<float>;                                 // 表示属性栈
+const float EMPTY_VAL = 0;                                      // 属性栈占位符
+using AnalyseAction = pair<ActionType, DFAState>;               // 表示分析表中的一个动作
 using AnalyseTableLine = unordered_map<symbol, AnalyseAction>;  // 表示分析表中的一行
 using AnalyseTable = unordered_map<DFAState, AnalyseTableLine>; // 表示分析表
 using Rule = pair<symbol, int>;                                 // 表示一个推到规则，即（左部）非终结符和（右部）产生式的长度
@@ -39,7 +39,7 @@ const AnalyseAction defaultAction = {ErrorActionType, -1};
 
 SymbolList *string_to_vector(const string &raw_string); // 将字符串转换为内部表示的符号列表
 
-int tryInt(const symbol word); // 若word为一个非负整数，返回该非负整数，否则返回-1
+float tryNum(const symbol word); // 若word为一个非负整数，返回该非负整数，否则返回-1
 
 class Calculator
 {

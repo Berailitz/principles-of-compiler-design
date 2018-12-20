@@ -7,12 +7,12 @@ SymbolList *string_to_vector(const string &raw_string)
                           istream_iterator<string>());
 }
 
-int tryInt(const symbol word)
+float tryNum(const symbol word)
 {
-    int result;
+    float result;
     try
     {
-        result = stoi(word);
+        result = stof(word);
     }
     catch (const invalid_argument &e)
     {
@@ -179,7 +179,7 @@ void Calculator::buildRuleList()
 
 AnalyseAction Calculator::SearchAnalyseTable(const DFAState state, const symbol &word)
 {
-    int intWord = tryInt(word);
+    int intWord = tryNum(word);
     symbol realWord;
     if (intWord >= 0)
     {
@@ -205,23 +205,56 @@ bool Calculator::performAction(const AnalyseAction &action)
     const symbol word = words->front();
     Rule rule;
     AnalyseAction nextAction;
+    int lexval;
+    const int topIndex = valStack.size() - 1;
     switch (action.first)
     {
     case ErrorActionType:
         cout << "Invalid sentence" << endl;
         throw "Invalid sentence";
     case AcceptActionType:
-        cout << "Valid sentence" << endl;
+        cout << "Finished, result is " << valStack.back() << endl;
         return true;
     case ShiftActionType:
         cout << "Shift " << word << " to state " << action.second << endl;
         symbolStack.push_back(word);
         stateStack.push_back(action.second);
+        lexval = tryNum(word);
+        if (lexval >= 0)
+        {
+            valStack.push_back(lexval);
+        }
+        else
+        {
+            valStack.push_back(EMPTY_VAL);
+        }
         words->pop_front();
         return false;
     case ReduceActionType:
         rule = ruleList->at(action.second);
         cout << "Reduce by " << action.second << endl;
+        switch (action.second)
+        {
+            case 2:
+            valStack[topIndex - 2] = valStack[topIndex - 2] + valStack[topIndex];
+            break;
+            case 3:
+            valStack[topIndex - 2] = valStack[topIndex - 2] - valStack[topIndex];
+            break;
+            case 5:
+            valStack[topIndex - 2] = valStack[topIndex - 2] * valStack[topIndex];
+            break;
+            case 6:
+            valStack[topIndex - 2] = valStack[topIndex - 2] / valStack[topIndex];
+            break;
+            case 8:
+            valStack[topIndex - 2] = valStack[topIndex - 1];
+            break;
+        }
+        for (int i = 0; i < rule.second - 1; i++)
+        {
+            valStack.pop_back();
+        }
         for (int i = 0; i < rule.second; i++)
         {
             symbolStack.pop_back();
@@ -244,16 +277,17 @@ bool Calculator::calculate(const string stringText)
     valStack = {EMPTY_VAL};
     bool isFinished = false;
     int i = 1;
-    cout << setw(5) << "No." << setw(20) << "StateStack" << setw(20) << "SymbolStack" << setw(45) << "Input" << setw(25) << "Output" << endl;
+    cout << setw(5) << "No." << setw(25) << "StateStack" << setw(25) << "SymbolStack" << setw(25) << "valStack" << setw(45) << "Input" << setw(30) << "Output" << endl;
     while (!isFinished)
     {
         const symbol word = words->front();
         AnalyseAction action = SearchAnalyseTable(stateStack.back(), word);
         cout << setw(5) << to_string(i);
-        cout << setw(20) << container_to_string(stateStack, "");
-        cout << setw(20) << container_to_string(symbolStack, "");
+        cout << setw(25) << container_to_string(stateStack, "|");
+        cout << setw(25) << container_to_string(symbolStack, "|");
+        cout << setw(25) << container_to_string(valStack, "|");
         cout << setw(45) << container_to_string(*words, "");
-        cout << setw(25);
+        cout << setw(30);
         try
         {
             isFinished = performAction(action);
@@ -263,6 +297,7 @@ bool Calculator::calculate(const string stringText)
             cout << e.what() << endl;
             return false;
         }
+        i++;
     }
     return true;
 }
@@ -270,12 +305,12 @@ bool Calculator::calculate(const string stringText)
 void Calculator::receive_text(istream &stream)
 {
     string raw_string;
-    cout << "Please enter a piece of text to analyse, type `" << END_MARK << "` to exit: ";
+    cout << "Please enter a piece of text to analyse, enter `" << END_MARK << "` to exit: ";
     getline(stream, raw_string);
     while (raw_string.size() > 0 && raw_string != END_MARK)
     {
         calculate(raw_string);
-        cout << "Please enter a piece of text to analyse, type `" << END_MARK << "` to exit: ";
+        cout << "Please enter a piece of text to analyse, enter `" << END_MARK << "` to exit: ";
         getline(stream, raw_string);
     }
 }
