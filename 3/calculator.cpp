@@ -277,17 +277,17 @@ bool Calculator::calculate(const string stringText)
     valStack = {EMPTY_VAL};
     bool isFinished = false;
     int i = 1;
-    cout << setw(5) << "No." << setw(25) << "StateStack" << setw(25) << "SymbolStack" << setw(25) << "valStack" << setw(45) << "Input" << setw(30) << "Output" << endl;
+    cout << setw(4) << "No." << setw(35) << "StateStack" << setw(35) << "SymbolStack" << setw(35) << "valStack" << setw(35) << "Input" << setw(25) << "Output" << endl;
     while (!isFinished)
     {
         const symbol word = words->front();
         AnalyseAction action = SearchAnalyseTable(stateStack.back(), word);
-        cout << setw(5) << to_string(i);
-        cout << setw(25) << container_to_string(stateStack, "|");
-        cout << setw(25) << container_to_string(symbolStack, "|");
-        cout << setw(25) << container_to_string(valStack, "|");
-        cout << setw(45) << container_to_string(*words, "");
-        cout << setw(30);
+        cout << setw(4) << to_string(i);
+        cout << setw(35) << container_to_string(stateStack, "|");
+        cout << setw(35) << container_to_string(symbolStack, "|");
+        cout << setw(35) << container_to_string(valStack, "|");
+        cout << setw(35) << container_to_string(*words, "");
+        cout << setw(25);
         try
         {
             isFinished = performAction(action);
