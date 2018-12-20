@@ -235,19 +235,19 @@ bool Calculator::performAction(const AnalyseAction &action)
         cout << "Reduce by " << action.second << endl;
         switch (action.second)
         {
-            case 2:
+        case 2:
             valStack[topIndex - 2] = valStack[topIndex - 2] + valStack[topIndex];
             break;
-            case 3:
+        case 3:
             valStack[topIndex - 2] = valStack[topIndex - 2] - valStack[topIndex];
             break;
-            case 5:
+        case 5:
             valStack[topIndex - 2] = valStack[topIndex - 2] * valStack[topIndex];
             break;
-            case 6:
+        case 6:
             valStack[topIndex - 2] = valStack[topIndex - 2] / valStack[topIndex];
             break;
-            case 8:
+        case 8:
             valStack[topIndex - 2] = valStack[topIndex - 1];
             break;
         }
