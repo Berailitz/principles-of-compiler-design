@@ -32,7 +32,7 @@ const float EMPTY_VAL = 0;                                      // 属性栈占�
 using AnalyseAction = pair<ActionType, DFAState>;               // 表示分析表中的一个动作
 using AnalyseTableLine = unordered_map<symbol, AnalyseAction>;  // 表示分析表中的一行
 using AnalyseTable = unordered_map<DFAState, AnalyseTableLine>; // 表示分析表
-using Rule = pair<symbol, int>;                                 // 表示一个推到规则，即（左部）非终结符和（右部）产生式的长度
+using Rule = pair<symbol, int>;                                 // 表示一个推导规则，即（左部）非终结符和（右部）产生式的长度
 using RuleList = vector<Rule>;                                  // 表示所有产生式
 
 const AnalyseAction defaultAction = {ErrorActionType, -1};

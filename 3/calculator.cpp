@@ -277,16 +277,16 @@ bool Calculator::calculate(const string stringText)
     valStack = {EMPTY_VAL};
     bool isFinished = false;
     int i = 1;
-    cout << setw(4) << "No." << setw(35) << "StateStack" << setw(35) << "SymbolStack" << setw(35) << "valStack" << setw(35) << "Input" << setw(25) << "Output" << endl;
+    cout << setw(4) << "No." << setw(20) << "StateStack" << setw(25) << "SymbolStack" << setw(35) << "valStack" << setw(45) << "Input" << setw(25) << "Output" << endl;
     while (!isFinished)
     {
         const symbol word = words->front();
         AnalyseAction action = SearchAnalyseTable(stateStack.back(), word);
         cout << setw(4) << to_string(i);
-        cout << setw(35) << container_to_string(stateStack, "|");
-        cout << setw(35) << container_to_string(symbolStack, "|");
+        cout << setw(20) << container_to_string(stateStack, "|");
+        cout << setw(25) << container_to_string(symbolStack, "|");
         cout << setw(35) << container_to_string(valStack, "|");
-        cout << setw(35) << container_to_string(*words, "");
+        cout << setw(45) << container_to_string(*words, "");
         cout << setw(25);
         try
         {
@@ -307,8 +307,9 @@ void Calculator::receive_text(istream &stream)
     string raw_string;
     cout << "Please enter a piece of text to analyse, enter `" << END_MARK << "` to exit: ";
     getline(stream, raw_string);
-    while (raw_string.size() > 0 && raw_string != END_MARK)
+    while (raw_string.size() > 0 && raw_string != END_MARK && !stream.eof())
     {
+        cout << endl;
         calculate(raw_string);
         cout << "Please enter a piece of text to analyse, enter `" << END_MARK << "` to exit: ";
         getline(stream, raw_string);
