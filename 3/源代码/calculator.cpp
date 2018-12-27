@@ -210,8 +210,7 @@ bool Calculator::performAction(const AnalyseAction &action)
     switch (action.first)
     {
     case ErrorActionType:
-        cout << "Invalid sentence" << endl;
-        throw "Invalid sentence";
+        throw logic_error("Invalid sentence");
     case AcceptActionType:
         cout << "Finished, result is " << valStack.back() << endl;
         return true;
@@ -265,7 +264,7 @@ bool Calculator::performAction(const AnalyseAction &action)
         stateStack.push_back(nextAction.second);
         return false;
     case GotoActionType:
-        throw "Invalid operation";
+        throw logic_error("Invalid operation");
     }
 }
 
@@ -277,22 +276,22 @@ bool Calculator::calculate(const string stringText)
     valStack = {EMPTY_VAL};
     bool isFinished = false;
     int i = 1;
-    cout << setw(4) << "No." << setw(20) << "StateStack" << setw(25) << "SymbolStack" << setw(35) << "valStack" << setw(45) << "Input" << setw(25) << "Output" << endl;
+    cout << setw(4) << "No." << setw(20) << "StateStack" << setw(20) << "SymbolStack" << setw(30) << "valStack" << setw(40) << "Input" << setw(25) << "Output" << endl;
     while (!isFinished)
     {
         const symbol word = words->front();
         AnalyseAction action = SearchAnalyseTable(stateStack.back(), word);
         cout << setw(4) << to_string(i);
         cout << setw(20) << container_to_string(stateStack, "|");
-        cout << setw(25) << container_to_string(symbolStack, "|");
-        cout << setw(35) << container_to_string(valStack, "|");
-        cout << setw(45) << container_to_string(*words, "");
+        cout << setw(20) << container_to_string(symbolStack, "|");
+        cout << setw(30) << container_to_string(valStack, "|");
+        cout << setw(40) << container_to_string(*words, "");
         cout << setw(25);
         try
         {
             isFinished = performAction(action);
         }
-        catch (const exception &e)
+        catch (const logic_error &e)
         {
             cout << e.what() << endl;
             return false;
