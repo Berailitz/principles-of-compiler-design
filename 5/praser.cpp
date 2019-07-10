@@ -249,7 +249,7 @@ bool prase_statement(SymbolTable &table, Node &statement)
     {
         SymbolTable *sub_table = new SymbolTable(&table); // 子符号表
         statement.info->table = sub_table;
-        sub_table->insert(statement.children[1]->string_value, *new Symbol(new VariantType(IntVariant)));
+        sub_table->insert(statement.children[1]->string_value, *new Symbol(new VariantType(IntVariant, true)));
         prase_statement(*sub_table, *statement.children[7]);
     }
 }
