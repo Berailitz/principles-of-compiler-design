@@ -87,9 +87,9 @@ class Token
   public:
     TokenType type = EmptyToken;
     int int_value = 0; // 同一类下各不同记号的序号
-    string string_value; // 标识符的ID（名字），int、float、boolean、char的值
-    int line; // 行号、
-    int column; // 列号
+    string string_value = ""; // 标识符的ID（名字），int、float、boolean、char的值
+    int line = -1; // 行号、
+    int column = -1; // 列号
     Token();
     Token(const string &string_value, const int line = -1, const int column = -1);
     Token(const string text, const string flag);
@@ -246,9 +246,13 @@ using NodeList = vector<Node*>;
 class Node : public Token
 {
 public:
-    NodeType type;
-    NodeList &children; // 记录其下属的子节点
+    NodeType type = EmptyNode;
+    NodeList &children = *new NodeList; // 记录其下属的子节点
     NodeInfo *info = nullptr;
+    Node(const NodeType type = EmptyNode);
+    Node(const Token &old_token);
+    Node(const Node &old_node);
+    Node &operator=(const Node &old_node);
     ~Node();
 };
 
