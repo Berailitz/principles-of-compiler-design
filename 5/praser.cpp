@@ -210,7 +210,7 @@ ParameterTypeList prase_parameter(const Node &parameter)
     }
     for (const string &name : parameters.first)
     {
-        same_type_list.push_back({name, ParameterType(parameters.second)});
+        same_type_list.push_back({name, ParameterType(parameters.second, is_reference)});
     }
     return same_type_list;
 }
