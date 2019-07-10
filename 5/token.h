@@ -168,7 +168,7 @@ enum NodeType
 {
     // 以下为终结符
     EmptyNode, // 空类型
-    ProgramKeyNode, // 程序节点
+    ProgramNode, // 程序节点
     LeftRoundBracketNode, // 左圆括号节点
     RightRoundBracketNode, // 右圆括号节点
     CommaNode, // 逗号节点
@@ -207,7 +207,7 @@ enum NodeType
     OpNode,//算术逻辑运算符节点
     NotOperatorNode, // 取反运算符节点
     // 以下为非终结符
-    ProgramNode,
+    ProgramStructNode,
     ProgramHeadNode,
     ProgramIDNode,
     IDListNode,
