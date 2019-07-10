@@ -1,78 +1,21 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<iostream>
-#include<vector>
-#include<map> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <iostream>
+#include <vector>
+#include <map> 
 #include <string> 
 #include <sstream>
+#include "token.h"
 using namespace std;
 
 #define Buffer_size 100												//输入缓冲区大小,可根据后面进行更改
 #define keyWord_length 20
 
-
-enum TokenType														//记号枚举类 
-{
-    EmptyToken, // 空类型
-    ProgramToken, // 程序记号
-    LeftRoundBracketToken, // 左圆括号记号
-    RightRoundBracketToken, // 右圆括号记号
-    CommaToken, // 逗号记号
-    IdentifierToken, // 标识符
-    SemicolonToken, // 分号记号
-    ProgramEndToken, // 程序结束记号
-    ConstDecalrationToken, // 常量声明记号
-    ConstAssignToken, // 常量赋值记号
-    VarDecalrationToken, // 变量声明记号
-    VarTypeToken,//变量类型记号
-    ColonToken, // 冒号记号
-    ProcedureToken, // 过程记号
-    FunctionToken, // 函数记号
-    BeginToken, // 块开始记号
-    EndToken, // 块结束记号
-    MinusToken, // 负号运算符
-    ArrayToken, // 数组记号
-    LeftSquareBracketToken, // 左方括号记号
-    RightSquareBracketToken, // 右方括号记号
-    ArrayRangeDelimiterToken, // 数组范围限制分隔
-    OfToken, // OF记号
-    IntToken, // 整数
-    RealToken, // 实数
-    BooleanToken, // 布尔值
-    CharToken, // 字符值
-    AssignToken, // 赋值运算符
-    IfToken, // IF记号
-    ThenToken, // Then记号
-    ElseToken, // Else记号
-    ForToken, // For记号
-    ToToken, // To记号
-    DoToken, // Do记号
-    ReadToken, // Read记号
-    WriteToken, // Write记号
-    RelopToken, // 关系运算符
-    OpToken,//算术逻辑运算符
-    NotOperatorToken // 取反运算符
-};
-
-enum RelopIndex
-{
-    GraterThan,
-    EqualTo,
-    LessThan,
-    NotGraterThan,
-    NotLessThan,
-    NotEqualTo,
-};
-enum OpIndex
-{
-    AddOp,
-    OrOp,
-    TimeOp,
-    DivOp,
-    DivWordOp,
-    ModOp,
-    AndOp
-};
+int lines = 1;
+int length = 0;
+TokenList &tokenList = *new TokenList;    
+ErrorList &errorList = *new ErrorList;  
+FILE *fp;   									// 测试文件指针 
 
 typedef struct _Buffer{																// 输入缓冲区的结构体 
 	int check = 0;
@@ -81,294 +24,12 @@ typedef struct _Buffer{																// 输入缓冲区的结构体
 	int columns = 0;								 
 }Buffer;
 
-int string2int(string str){															//字符串转换为整型 
-    stringstream ss;
-    ss << str;
-    int result;
-    ss >> result;
-    return result;
-}
-const string TOKEN_TEXT_DELIMITER = " ";
-class Token
-{
-  public:
-    TokenType type = EmptyToken;
-    int int_value = 0; 																// 同一类下各不同记号的序号
-    string string_value;															// 标识符的ID（名字），int、float、boolean、char的值
-    int line; 																		// 行号
-    int column; 																	// 列号
-    Token();
-    Token(const string &string_value, const int line = -1, const int column = -1){	//传入string_value的构造函数 
-    	this->line = line;
-    	this->column = column;
-    	this->string_value.assign(string_value);
-    	int k = 0;
-		//cout<<string_value<<endl;
-    	if(string_value=="program"){												//判断不同类型的string_value 
-    		type = ProgramToken;
-		}
-		else if(string_value=="("){
-			type = LeftRoundBracketToken;
-		}
-		else if(string_value==")"){
-			type = RightRoundBracketToken;
-		}
-		else if(string_value==","){
-			type = CommaToken;
-		}
-		else if(string_value==";"){
-			type = SemicolonToken;
-		}
-		else if(string_value=="."){
-			type = ProgramEndToken;
-		}
-		else if(string_value=="const"){
-			type = ConstDecalrationToken;
-		}
-		else if(string_value=="=?"){
-			type = ConstAssignToken;
-			this->string_value.assign("=");
-		}
-		else if(string_value=="var"){
-			type = VarDecalrationToken;
-		}
-		else if(string_value=="integer"){
-			type = VarTypeToken;
-			int_value = 1;
-		}
-		else if(string_value=="real"){
-			type = VarTypeToken;
-			int_value = 2;
-		}
-		else if(string_value=="boolean"){
-			type = VarTypeToken;
-			int_value = 3;
-		}
-		else if(string_value=="char"){
-			type = VarTypeToken;
-			int_value = 4;
-		}
-		else if(string_value==":"){
-			type = ColonToken;
-		}
-		else if(string_value=="procedure"){
-			type = ProcedureToken;
-		}
-		else if(string_value=="function"){
-			type = FunctionToken;
-		}
-		else if(string_value=="begin"){
-			type = BeginToken;
-		}
-		else if(string_value=="end"){
-			type = EndToken;
-		}
-		else if(string_value.find("..")!= string::npos){
-			type = ArrayRangeDelimiterToken;
-			this->string_value.assign(this->string_value.substr(1,this->string_value.length()-1));
-		}
-		else if(string_value=="-"){
-			type = MinusToken;
-		}
-		else if(string_value=="array"){
-			type = ArrayToken;
-		}
-		else if(string_value=="["){
-			type = LeftSquareBracketToken;
-		}
-		else if(string_value=="]"){
-			type = RightSquareBracketToken;
-		}
-		else if(string_value=="of"){
-			type = OfToken;
-		}
-		else if(string_value==":="){
-			type = AssignToken;
-		}
-		else if(string_value=="if"){
-			type = IfToken;
-		}
-		else if(string_value=="then"){
-			type = ThenToken;
-		}
-		else if(string_value=="else"){
-			type = ElseToken;
-		}
-		else if(string_value=="for"){
-			type = ForToken;
-		}
-		else if(string_value=="to"){
-			type = ToToken;
-		}
-		else if(string_value=="do"){
-			type = DoToken;
-		}
-		else if(string_value=="read"){
-			type = ReadToken;
-		}
-		else if(string_value=="write"){
-			type = WriteToken;
-		}
-		else if(string_value==">"){
-			type = RelopToken;
-			int_value = 1;
-		}
-		else if(string_value=="="){
-			type = RelopToken;
-			int_value = 2;
-		}
-		else if(string_value=="<"){
-			type = RelopToken;
-			int_value = 3;
-		}
-		else if(string_value=="<="){
-			type = RelopToken;
-			int_value = 4;
-		}
-		else if(string_value==">="){
-			type = RelopToken;
-			int_value = 5;
-		}
-		else if(string_value=="<>"){
-			type = RelopToken;
-			int_value = 6;
-		}
-		else if(string_value=="+"){
-			type = OpToken;
-			int_value = 1;
-		}
-		else if(string_value=="*"){
-			type = OpToken;
-			int_value = 2;
-		}
-		else if(string_value=="/"){
-			type = OpToken;
-			int_value = 3;
-		}
-		else if(string_value=="div"){
-			type = OpToken;
-			int_value = 4;
-		}
-		else if(string_value=="mod"){
-			type = OpToken;
-			int_value = 5;
-		}
-		else if(string_value=="and"){
-			type = OpToken;
-			int_value = 6;
-		}
-		else if(string_value=="or"){
-			type = OpToken;
-			int_value = 7;
-		}
-		else if(string_value=="not"){
-			type = NotOperatorToken;
-		}
-		else if(string_value=="false"||string_value =="true"){
-			type = BooleanToken;
-		}
-		else if(string_value.find(".")!= string::npos){
-			type = RealToken;
-		}
-		/*else if(string_value.find("?")!= string::npos){
-			type = ArrayRangeDelimiterToken;
-			this->string_value.assign(string_value.substr(1, string_value.length()-1));	
-		}*/
-		else if(string_value=="0"){
-			type = IntToken;			
-		}
-		else if(!string2int(string_value)){
-			type = IdentifierToken;
-		}
-		else{
-			type = IntToken;
-		}
-		return; 
-	};
-    Token(const string text,string flag){											
-    	string s;
-    	s.assign(text);
-    	int p;
-		p = s.find(" ");
-		int t = string2int(s.substr(0,p));
-		this->type = TokenType(t);
-    	s.assign(s.substr(p+1,s.length()-p-1));
-		p = s.find(" ");
-    	string_value.assign(s.substr(0,p));
-    	s.assign(s.substr(p+1,s.length()-p-1));
-		p = s.find(" ");
-    	line = string2int(s.substr(0,p));
-    	s.assign(s.substr(p+1,s.length()-p-1));
-    	column =string2int(s); //stoi(s.substr(p+1,s.length()),0,10);
-    	return;
-	};
-    operator string() const{																		//把Token转换为string 
-		string token_text = to_string(type) + TOKEN_TEXT_DELIMITER + string_value;
-		return token_text + TOKEN_TEXT_DELIMITER + to_string(line) + TOKEN_TEXT_DELIMITER + to_string(column);
-	};
-};
-
-class Error
-{
-  public:
-    int line;
-    int column;
-    string msg;
-    Error();
-    Error(const string msg, const int line = -1, const int column = -1){
-    	this->msg.assign(msg);
-    	this->line = line;
-    	this->column = column;
-	};
-    string what() const{
-    	string error_text = to_string(line) + TOKEN_TEXT_DELIMITER + to_string(column) + TOKEN_TEXT_DELIMITER + msg;
-		return error_text;
-	}; // 返回由行号、列号和msg组成的人性化的错误说明字符串
-};
 
 void Initkey(void);
 void Initbuffer(FILE* fp, Buffer* buffer,int &model);
 char get_char(FILE* fp,Buffer* buffer,int &model,int &forward, int &x, int & y); 
 void Lexer( FILE *fp); 
 
-
-int lines = 1;
-int length = 0;
-vector<Token> tokenList;    
-vector<Error> errorList;  
-FILE *fp;   									// 测试文件指针 
-
-int main(void){
-	
-    if((fp=fopen("test.txt","r"))==NULL)
-    {
-        printf("Test cannot open! \n");
-        exit(0);
-    }
-    else
-        printf("Tests start! \n");
-    
-	Lexer( fp);  
-    for(int i=0;i<tokenList.size();i++){
-    	//printf("%d\n",tokenList[i].type+3);
-    	cout<<string(tokenList[i])<<endl;
-    	/*string k;
-		k.assign(string(tokenList[i]));
-    	Token s(k,string("123"));
-    	cout<<string(s)<<endl;
-    	cout<<endl;*/
-	}
-	
-	printf("错误列表如下：\n");
-	for(int j=0;j<errorList.size();j++){
-		cout<<errorList[j].what()<<endl;
-	}
-	if(errorList.size()==0){
-		printf("没有错误！"); 
-	}
-    fclose(fp);
-    return 0;
-} 
 
 void Initbuffer(FILE* fp, Buffer* buffer,int &model){
 	//初始输入缓冲区
@@ -1139,3 +800,41 @@ void Lexer( FILE *fp){
 	}
 	
 }
+
+
+pair<TokenList, ErrorList> lexer(const string filename)
+{
+    if((fp=fopen(filename.c_str(),"r"))==NULL)
+    {
+        printf("Test cannot open! \n");
+        exit(0);
+    }
+    else
+        printf("Tests start! \n");
+	Lexer( fp);  
+	return {tokenList, errorList};
+}
+
+
+int main(void){
+	lexer("test.txt");
+    for(int i=0;i<tokenList.size();i++){
+    	//printf("%d\n",tokenList[i].type+3);
+    	cout<<string(tokenList[i])<<endl;
+    	/*string k;
+		k.assign(string(tokenList[i]));
+    	Token s(k,string("123"));
+    	cout<<string(s)<<endl;
+    	cout<<endl;*/
+	}
+	
+	printf("错误列表如下：\n");
+	for(int j=0;j<errorList.size();j++){
+		cout<<errorList[j].what()<<endl;
+	}
+	if(errorList.size()==0){
+		printf("没有错误！"); 
+	}
+    fclose(fp);
+    return 0;
+} 
