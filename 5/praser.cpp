@@ -94,7 +94,7 @@ bool prase_const_declaration(SymbolTable &table, const Node &const_declaration)
     else
     {
         prase_const_declaration(table, *const_declaration.children[0]);
-        prase_const_declaration_children(table, *(const_declaration.children[2]));
+        prase_const_declaration_children(table, const_declaration.children.begin()+2);
     }
 }
 
@@ -108,7 +108,7 @@ bool prase_const_declarations(SymbolTable &program_table, const Node &const_decl
 
 pair<int, int> make_range_from_period_children(const NodeList::iterator &it)
 {
-    return {stoi(it->string_value), stoi((it + 2)->string_value)};
+    return {stoi((*it)->string_value), stoi((*it + 2)->string_value)};
 }
 
 ArrayRange prase_period(const Node &period)
@@ -174,7 +174,7 @@ bool prase_var_declaration(SymbolTable &table, const Node &var_declaration)
     else
     {
         prase_var_declaration(table, *var_declaration.children[0]);
-        prase_var_declaration_children(table, *(var_declaration.children[2]));
+        prase_var_declaration_children(table, var_declaration.children.begin() + 2);
     }
 }
 
@@ -233,7 +233,7 @@ ParameterTypeList prase_parameter_list(const Node &parameter_list)
 
 ParameterTypeList prase_formal_parameter(const Node &formal_parameter)
 {
-    if (formal_parameter.children.size == 3)
+    if (formal_parameter.children.size() == 3)
     {
         return prase_parameter_list(*formal_parameter.children[1]);
     }
