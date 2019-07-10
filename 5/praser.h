@@ -4,7 +4,8 @@
 #include "token.h"
 
 using PraserState = int; // 分析器的状态
-using PraserRule = pair<NodeType, int>; // 左侧非终结符，右侧候选式的长度
+using Candicate = vector<NodeType>;
+using PraserRule = pair<NodeType, Candicate>; // 左侧非终结符，右侧候选式的长度
 using PraserRuleList = vector<PraserRule>; // 产生式列表
 
 // 分析表中操作，仅转换状态（用于栈顶为非终结符的情况）、移进、归约和接受（结束）
@@ -31,5 +32,7 @@ class Praser
 };
 
 NodeType token_type_to_node_type(const TokenType token_type);
+
+void build_parser_rules(PraserRuleList &rules);
 
 #endif

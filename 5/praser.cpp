@@ -5,6 +5,10 @@ void Praser::build_table_and_rules()
     
 }
 
+Praser::Praser()
+{
+}
+
 Node *Praser::prase(const TokenList &tokens) const
 {
     TokenList::const_iterator it = tokens.begin();
@@ -14,6 +18,7 @@ Node *Praser::prase(const TokenList &tokens) const
     PraserAction action = table.at({state, token_type_to_node_type(it->type)});
     while (action.first != AcceptStackAction)
     {
+		PraserRule rule;
         switch (action.first)
         {
         case EmptyStackAction:
@@ -24,10 +29,10 @@ Node *Praser::prase(const TokenList &tokens) const
             it++;
             break;
         case ReduceStackAction:
-            PraserRule rule = rules[action.second];
+             rule = rules[action.second];
             Node *parent = new Node(rule.first);
             parent->children = move(nodes);
-            for (int i = 0; i < rule.second; i++)
+            for (int i = 0; i < rule.second.size(); i++)
             {
                 stack.pop_back();
             }
@@ -45,6 +50,79 @@ Node *Praser::prase(const TokenList &tokens) const
 NodeType token_type_to_node_type(const TokenType token_type)
 {
     return static_cast<NodeType>(token_type);
+}
+
+void build_parser_rules(PraserRuleList & rules)
+{
+	rules.push_back({ ProgramStructNode,{ ProgramHeadNode, SemicolonNode, ProgramBodyNode } });
+	rules.push_back({ ProgramHeadNode,{ ProgramNode, IdentifierNode, LeftRoundBracketNode, IDListNode, RightRoundBracketNode } });
+	rules.push_back({ ProgramHeadNode,{ ProgramNode, IdentifierNode } });
+	rules.push_back({ ProgramBodyNode,{ ConstDeclarationsNode, VarDeclarationsNode, SubprogramDeclarationsNode, CompoundStatementNode } });
+	rules.push_back({ IDListNode,{ IDListNode, CommaNode, IdentifierNode } });
+	rules.push_back({ IDListNode,{ IdentifierNode } });
+	rules.push_back({ ConstDeclarationsNode,{ ConstDecalrationNode, ConstDecalrationNode, SemicolonNode } });
+	rules.push_back({ ConstDeclarationsNode,{ } });
+	rules.push_back({ ConstDecalrationNode,{ ConstDecalrationNode, SemicolonNode, IdentifierNode, ConstAssignNode, ConstValueNode } });
+	rules.push_back({ ConstDecalrationNode,{ IdentifierNode, ConstAssignNode, ConstValueNode } });
+	rules.push_back({ ConstValueNode,{ IntNode } });
+	rules.push_back({ ConstValueNode,{ RealNode } });
+	rules.push_back({ ConstValueNode,{ CharNode } });
+	rules.push_back({ VarDeclarationsNode,{ VarDecalrationNode, VarDeclarationNode, SemicolonNode } });
+	rules.push_back({ VarDeclarationsNode,{  } });
+	rules.push_back({ VarDeclarationNode,{ VarDeclarationNode, SemicolonNode, IDListNode, ColonNode, TypeNode } });
+	rules.push_back({ VarDeclarationNode,{ IDListNode, ColonNode, TypeNode } });
+	rules.push_back({ TypeNode,{ BasicTypeNode } });
+	rules.push_back({ TypeNode,{ BasicTypeNode, ArrayNode, LeftSquareBracketNode, PeriodNode, RightSquareBracketNode, OfNode, BasicTypeNode } });
+	rules.push_back({ BasicTypeNode,{ VarTypeNode } });
+	rules.push_back({ PeriodNode,{ PeriodNode, CommaNode, IntNode, ArrayRangeDelimiterNode, IntNode } });
+	rules.push_back({ PeriodNode,{ IntNode, ArrayRangeDelimiterNode, IntNode } });
+	rules.push_back({ SubprogramDeclarationsNode,{ SubprogramDeclarationsNode, SubprogramNode, SemicolonNode } });
+	rules.push_back({ SubprogramDeclarationsNode,{  } });
+	rules.push_back({ SubprogramNode,{ ProcedureNode, IdentifierNode, FormalParameterNode } });
+	rules.push_back({ SubprogramNode,{ FunctionNode, IdentifierNode, FormalParameterNode, ColonNode, BasicTypeNode } });
+	rules.push_back({ FormalParameterNode,{ LeftRoundBracketNode, ParameterListNode, RightRoundBracketNode } });
+	rules.push_back({ FormalParameterNode,{  } });
+	rules.push_back({ ParameterListNode,{ ParameterListNode, SemicolonNode, ParameterNode } });
+	rules.push_back({ ParameterListNode,{ ParameterNode } });
+	rules.push_back({ ParameterNode,{ VarParameterNode } });
+	rules.push_back({ ParameterNode,{ ValueParameterNode } });
+	rules.push_back({ VarParameterNode,{ VarDecalrationNode, ValueParameterNode } });
+	rules.push_back({ ValueParameterNode,{ IDListNode, ColonNode, BasicTypeNode } });
+	rules.push_back({ SubprogramBodyNode,{ ConstDeclarationsNode, VarDeclarationsNode, CompoundStatementNode } });
+	rules.push_back({ CompoundStatementNode,{ BeginNode, StatementListNode, EndNode } });
+	rules.push_back({ StatementListNode,{ StatementListNode, SemicolonNode, StatementNode } });
+	rules.push_back({ StatementListNode,{ StatementNode } });
+	rules.push_back({ StatementNode,{ VariableNode, AssignNode, ExpressionNode } });
+	rules.push_back({ StatementNode,{ ProcedureCallNode } });
+	rules.push_back({ StatementNode,{ CompoundStatementNode } });
+	rules.push_back({ StatementNode,{ IfNode, ExpressionNode, ThenNode, StatementNode, ElsePartNode } });
+	rules.push_back({ StatementNode,{ ForNode, IdentifierNode, AssignNode, ExpressionNode, ToNode, ExpressionNode, DoNode, StatementNode } });
+	rules.push_back({ StatementNode,{ ReadNode, LeftRoundBracketNode, VariableListNode, RightRoundBracketNode } });
+	rules.push_back({ StatementNode,{ WriteNode, LeftRoundBracketNode, ExpressionListNode, RightRoundBracketNode } });
+	rules.push_back({ StatementNode,{  } });
+	rules.push_back({ VariableListNode,{ VariableListNode, CommaNode, VariableNode } });
+	rules.push_back({ VariableListNode,{ VariableNode } });
+	rules.push_back({ VariableNode,{ IdentifierNode, IDVarpartNode } });
+	rules.push_back({ IDVarpartNode,{ LeftSquareBracketNode, ExpressionListNode, RightSquareBracketNode } });
+	rules.push_back({ IDVarpartNode,{  } });
+	rules.push_back({ ProcedureCallNode,{ IdentifierNode } });
+	rules.push_back({ ProcedureCallNode,{ IdentifierNode, LeftRoundBracketNode, ExpressionListNode, RightRoundBracketNode } });
+	rules.push_back({ ElsePartNode,{ ElseNode, StatementNode } });
+	rules.push_back({ ElsePartNode,{  } });
+	rules.push_back({ ExpressionListNode,{ ExpressionListNode, CommaNode, ExpressionNode } });
+	rules.push_back({ ExpressionListNode,{ ExpressionNode } });
+	rules.push_back({ ExpressionNode,{ SimpleExpressionNode, RelopNode, SimpleExpressionNode } });
+	rules.push_back({ ExpressionNode,{ SimpleExpressionNode } });
+	rules.push_back({ SimpleExpressionNode,{ SimpleExpressionNode, OpNode, TermNode } });
+	rules.push_back({ SimpleExpressionNode,{ TermNode } });
+	rules.push_back({ TermNode,{ TermNode, OpNode, FactorNode } });
+	rules.push_back({ TermNode,{ FactorNode } });
+	rules.push_back({ FactorNode,{ IntNode } });
+	rules.push_back({ FactorNode,{ VariableNode } });
+	rules.push_back({ FactorNode,{ IdentifierNode, LeftRoundBracketNode, ExpressionListNode, RightRoundBracketNode } });
+	rules.push_back({ FactorNode,{ LeftRoundBracketNode, ExpressionNode, RightRoundBracketNode } });
+	rules.push_back({ FactorNode,{ NotOperatorNode, FactorNode } });
+	rules.push_back({ FactorNode,{ MinusNode, FactorNode } });
 }
 
 BasicVariantType node_to_basic_variant_type(const Node &node)
