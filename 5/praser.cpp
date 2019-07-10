@@ -1,5 +1,10 @@
 #include "praser.h"
 
+void Praser::build_table_and_rules()
+{
+    
+}
+
 Node *Praser::prase(const TokenList &tokens) const
 {
     TokenList::const_iterator it = tokens.begin();
