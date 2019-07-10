@@ -9,6 +9,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -81,6 +82,7 @@ enum VarType
     BooleanVarType,
     CharVarType
 };
+const string TOKEN_TEXT_DELIMITER = " ";
 
 class Token
 {
@@ -95,6 +97,7 @@ class Token
     Token(const string text, const string flag);
     operator string() const;
 };
+using TokenList = vector<Token>;
 
 // 描述基本的变量类型和数组元素类型
 enum BasicVariantType
@@ -165,7 +168,7 @@ enum NodeType
 {
     // 以下为终结符
     EmptyNode, // 空类型
-    ProgramNode, // 程序节点
+    ProgramKeyNode, // 程序节点
     LeftRoundBracketNode, // 左圆括号节点
     RightRoundBracketNode, // 右圆括号节点
     CommaNode, // 逗号节点
@@ -241,6 +244,7 @@ enum NodeType
     FactorNode,
 };
 
+class Node;
 using NodeList = vector<Node*>;
 
 class Node : public Token
@@ -255,5 +259,17 @@ public:
     Node &operator=(const Node &old_node);
     ~Node();
 };
+
+class Error
+{
+  public:
+    int line;
+    int column;
+    string msg;
+    Error();
+    Error(const string msg, const int line = -1, const int column = -1);
+    string what() const; // 返回由行号、列号和msg组成的人性化的错误说明字符串
+};
+using ErrorList = vector<Error>;
 
 #endif

@@ -19,7 +19,6 @@ using StackActionArg = int; // ReduceStackAction对应的产生式的序号，�
 using PraserAction = pair<StackAction, StackActionArg>; // 分析表中的项
 using PraserActionTable = unordered_map<pair<PraserState, NodeType>, PraserAction>; // 分析表
 using PraserStack = vector<pair<int, NodeType>>; // 状态栈和符号栈
-using TokenList =  vector<Token>;
 
 class Praser
 {
