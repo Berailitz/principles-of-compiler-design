@@ -1,6 +1,6 @@
 {
     "clang.cxxflags": [
-        "-std=c++17",
+        "-std=c++14",
         "--target=x86_64-pc-windows-mingw64"
     ],
     "files.autoGuessEncoding": true,
