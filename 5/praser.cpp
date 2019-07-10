@@ -52,7 +52,7 @@ NodeType token_type_to_node_type(const TokenType token_type)
     return static_cast<NodeType>(token_type);
 }
 
-void build_parser_rules(PraserRuleList & rules)
+void Praser::build_parser_rules(PraserRuleList & rules)
 {
 	rules.push_back({ ProgramStructNode,{ ProgramHeadNode, SemicolonNode, ProgramBodyNode } });
 	rules.push_back({ ProgramHeadNode,{ ProgramNode, IdentifierNode, LeftRoundBracketNode, IDListNode, RightRoundBracketNode } });
@@ -123,6 +123,104 @@ void build_parser_rules(PraserRuleList & rules)
 	rules.push_back({ FactorNode,{ LeftRoundBracketNode, ExpressionNode, RightRoundBracketNode } });
 	rules.push_back({ FactorNode,{ NotOperatorNode, FactorNode } });
 	rules.push_back({ FactorNode,{ MinusNode, FactorNode } });
+}
+
+void Praser::make_state(DFAState & state) const
+{
+	bool is_changed = true;
+	while (is_changed)
+	{
+		is_changed = false;
+		int size = state.size();
+		for (int i = 0; i < size; i++)
+		{
+			DFAPart part = state[i];
+			Candidate candidate = rules[part.first].second;
+			int pos_id = part.second.first;
+			NodeType next_char = candidate[pos_id];
+			if (pos_id < candidate.size() && next_char >= ProgramStructNode)
+			{
+				for (int j = 0; j < rules.size(); j++)
+				{
+					const PraserRule &rule = rules[j];
+					if (rule.first == next_char)
+					{
+						Candidate follows;
+						if (pos_id != candidate.size() -1)
+						{
+							follows = Candidate(candidate.begin() + pos_id + 1, candidate.end());
+						}
+						follows.push_back(part.second.second);
+						NodeSet firsts = get_first(follows);
+						for (const NodeType type : firsts)
+						{
+							DFAPart new_part = { j,{ 0, type } };
+							if (find_part(state, new_part) != -1)
+							{
+								state.push_back(new_part);
+								is_changed = true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+bool Praser::grow_state(DFAState & state)
+{
+	for (const DFAPart &part : state)
+	{
+		Candidate candidate = rules[part.first].second;
+		if (part.second.first < candidate.size())
+		{
+			DFAState next_state({ part });
+			NodeType next_char = candidate[part.second.first];
+			next_state[0].second.first++;
+			make_state(next_state);
+			int state_id = find_state(next_state);
+			if (state_id == -1)
+			{
+				state_id = set.size();
+				set.push_back(next_state);
+				grow_state(next_state);
+			}
+			table[{state_id, next_char}] = { ShiftStackAction, state_id };
+		}
+	}
+}
+
+int Praser::find_state(const DFAState new_state) const
+{
+	for (int i = 0; i < set.size(); i++)
+	{
+		if (set[i] == new_state)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+int Praser::find_part(const DFAState state, const DFAPart part) const
+{
+	for (int i = 0; i < state.size(); i++)
+	{
+		if (state[i] == part)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+void Praser::build_parser_table(PraserActionTable & table, PraserRuleList & rules)
+{
+	DFAState state({ {{0, {0, EmptyNode }}} });
+	make_state(state);
+	set.push_back(state);
+	grow_state(state);
 }
 
 BasicVariantType node_to_basic_variant_type(const Node &node)
