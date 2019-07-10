@@ -240,7 +240,7 @@ ParameterTypeList prase_formal_parameter(const Node &formal_parameter)
 
 bool prase_statement(SymbolTable &table, Node &statement)
 {
-    if (statement.children[0]->type == ForNode)
+    if (statement.children.size() > 0 && statement.children[0]->type == ForNode)
     {
         SymbolTable *sub_table = new SymbolTable(&table); // 子符号表
         statement.info->table = sub_table;
