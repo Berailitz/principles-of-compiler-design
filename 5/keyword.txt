@@ -1,0 +1,17 @@
+program:ProgramToken
+const:ConstDecalrationToken
+var:VarDecalrationToken
+procedure:ProcedureToken
+function:FunctionToken
+begin:BeginToken
+end:EndToken
+array:ArrayToken
+of:OfToken
+if:IfToken
+then:ThenToken
+else:ElseToken
+for:ForToken
+to:ToToken
+do:DoToken
+read:ReadToken
+write:WriteToken
