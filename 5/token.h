@@ -92,8 +92,10 @@ class Token
     string string_value = ""; // 标识符的ID（名字），int、float、boolean、char的值
     int line = -1; // 行号、
     int column = -1; // 列号
+	Token();
     Token(const string &string_value, const int line = -1, const int column = -1);
     Token(const string text, const string flag);
+	Token(const Token *old_token);
     operator string() const;
 };
 using TokenList = vector<Token>;
@@ -117,8 +119,8 @@ public:
     BasicVariantType type = EmptyVariant;
     ArrayRange *scope = nullptr; // 若不为空指针，则为数组，存储数组维度上下界
     bool is_constant = false;
-    VariantType(const BasicVariantType type, const bool is_constant = false, const ArrayRange *scope = nullptr);
-    VariantType(const VariantType &old_variantType);
+    VariantType(const BasicVariantType type, const bool is_constant = false, const ArrayRange *old_scope = nullptr);
+    VariantType(const VariantType &old_variant_type);
 };
 
 // 描述所有函数、参数的类型
@@ -139,7 +141,7 @@ class Symbol
 public:
     VariantType *type = nullptr; // 若不为空指针，则为函数，存储函数的返回值；若为变量，则是变量的type
     ParameterTypeList *parameters = nullptr; // 若不为空指针，则为函数或过程，存储其形参列表；通过检查vector的长度来判断是否是函数标识符
-    Symbol(const VariantType *type = nullptr, const ParameterTypeList *parameters = nullptr);
+    Symbol(VariantType *type = nullptr, ParameterTypeList *parameters = nullptr);
     Symbol(const Symbol &old_symbol);
 };
 
@@ -150,9 +152,9 @@ public:
     SymbolTable *parent = nullptr; // 指向上一级符号表，主符号表中为空
     Symbol *source = nullptr; // 指向本级符号表对应的符号，如函数符号，以便查询返回值类型等，主符号表中为空
     unordered_map<string, Symbol> &Symbols; // 符号表的内容
-    SymbolTable(const SymbolTable *parent = nullptr, const Symbol *source = nullptr);
+    SymbolTable(SymbolTable *parent = nullptr, Symbol *source = nullptr);
     bool insert(const string &key, const Symbol &value); // 若存在，返回假，并报错
-    Symbol &find(const string &key) const;
+    Symbol find(const string &key) const; // 若不存在，插入之
 };
 
 class NodeInfo
@@ -161,6 +163,7 @@ public:
     VariantType returnType;
     SymbolTable *table = nullptr;
     ArrayRange *scope = nullptr;//数组范围 ，顺便判断是不是数组
+	NodeInfo(const NodeInfo &old_node_info);
 };
 
 enum NodeType
@@ -262,13 +265,14 @@ public:
 class Error
 {
   public:
-    int line;
-    int column;
-    string msg;
+    int line = -1;
+    int column = -1;
+    string msg = "";
     Error();
     Error(const string msg, const int line = -1, const int column = -1);
     string what() const; // 返回由行号、列号和msg组成的人性化的错误说明字符串
 };
 using ErrorList = vector<Error>;
+NodeType token_type_to_node_type(const TokenType token_type);
 
 #endif

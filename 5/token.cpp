@@ -9,6 +9,10 @@ int string2int(string str){															//字符串转换为整型
     return result;
 }
 
+Token::Token()
+{
+}
+
 Token::Token(const string &string_value, const int line, const int column){	//传入string_value的构造函数 
 	this->line = line;
 	this->column = column;
@@ -215,12 +219,25 @@ Token::Token(const string text,string flag){
 	return;
 }
 
+Token::Token(const Token * old_token): 
+	type(old_token->type),
+	int_value(old_token->int_value),
+	string_value(old_token->string_value),
+	line(old_token->line),
+	column(old_token->column)
+{
+}
+
 Token::operator string() const
 {																		//把Token转换为string 
 	string token_text = to_string(type) + TOKEN_TEXT_DELIMITER + string_value;
 	return token_text + TOKEN_TEXT_DELIMITER + to_string(line) + TOKEN_TEXT_DELIMITER + to_string(column);
 }
 
+
+Error::Error()
+{
+}
 
 Error::Error(const string msg, const int line, const int column){
 	this->msg.assign(msg);
@@ -232,3 +249,119 @@ string Error::what() const
 	string error_text = to_string(line) + TOKEN_TEXT_DELIMITER + to_string(column) + TOKEN_TEXT_DELIMITER + msg;
 	return error_text;
 }; // 返回由行号、列号和msg组成的人性化的错误说明字符串
+
+ParameterType::ParameterType(const VariantType & old_variantType, const bool is_referfence) : VariantType(old_variantType), is_referfence(is_referfence)
+{
+
+}
+
+VariantType::VariantType(const BasicVariantType type, const bool is_constant, const ArrayRange * old_scope) : type(type), is_constant(is_constant)
+{
+	if (old_scope != nullptr)
+	{
+		scope = new ArrayRange(*old_scope);
+	}
+}
+
+VariantType::VariantType(const VariantType & old_variant_type) : type(old_variant_type.type), is_constant(old_variant_type.is_constant)
+{
+	if (old_variant_type.scope != nullptr)
+	{
+		scope = new ArrayRange(*old_variant_type.scope);
+	}
+}
+
+Symbol::Symbol(VariantType * type, ParameterTypeList * parameters) : type(type), parameters(parameters)
+{
+
+}
+
+Symbol::Symbol(const Symbol & old_symbol)
+{
+	if (old_symbol.type != nullptr)
+	{
+		type = new VariantType(*old_symbol.type);
+	}
+	if (old_symbol.parameters != nullptr)
+	{
+		parameters = new ParameterTypeList(*old_symbol.parameters);
+	}
+}
+
+SymbolTable::SymbolTable(SymbolTable * parent, Symbol * source) : parent(parent), source(source), Symbols(*new unordered_map<string, Symbol>)
+{
+}
+
+bool SymbolTable::insert(const string & key, const Symbol & value)
+{
+	if (Symbols.find(key) == Symbols.end())
+	{
+		Symbols[key] = value;
+		return true;
+	}
+	else
+	{
+		Symbols[key] = value;
+		return false;
+	}
+}
+
+Symbol SymbolTable::find(const string & key) const
+{
+	auto it = Symbols.find(key);
+	if (it == Symbols.end())
+	{
+		Symbol empty_symbol;
+		Symbols[key] = empty_symbol;
+		return empty_symbol;
+	}
+	else
+	{
+		return it->second;
+	}
+}
+
+Node::Node(const NodeType type) : type(type)
+{
+}
+
+Node::Node(const Token & old_token) : Token(old_token)
+{
+	type = token_type_to_node_type(old_token.type);
+}
+
+Node::Node(const Node & old_node) : type(old_node.type), children(*new NodeList(old_node.children))
+{
+	if (old_node.info != nullptr)
+	{
+		info = new NodeInfo(*old_node.info);
+	}
+}
+
+Node & Node::operator=(const Node & old_node)
+{
+	type = old_node.type;
+	//children = *new NodeList(old_node.children);
+	if (old_node.info != nullptr)
+	{
+		info = new NodeInfo(*old_node.info);
+	}
+}
+
+Node::~Node()
+{
+	delete info;
+	delete &children;
+}
+
+NodeInfo::NodeInfo(const NodeInfo & old_node_info) : returnType(old_node_info.returnType)
+{
+	if (old_node_info.table != nullptr)
+	{
+		table = new SymbolTable(*old_node_info.table);
+	}
+	if (old_node_info.scope != nullptr)
+	{
+		scope = new ArrayRange(*old_node_info.scope);
+	}
+}
