@@ -30,4 +30,6 @@ class Praser
     void build_table_and_rules();
 };
 
+NodeType token_type_to_node_type(const TokenType token_type);
+
 #endif
