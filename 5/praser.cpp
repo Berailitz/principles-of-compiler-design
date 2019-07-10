@@ -1,8 +1,39 @@
 #include "praser.h"
 
-void Praser::prase(const vector<Token&> tokens)
+void Praser::prase(const TokenList &tokens) const
 {
+    TokenList::const_iterator it = tokens.begin();
+    PraserState state = 0;
+    PraserStack stack;
+    PraserAction action = table.at({state, token_type_to_node_type(it->type)});
+    while (action.first != AcceptStackAction)
+    {
+        switch (action.first)
+        {
+        case EmptyStackAction:
+            break;
+        case ShiftStackAction:
+            stack.push_back({action.second, token_type_to_node_type(it->type)});
+            it++;
+            break;
+        case ReduceStackAction:
+            PraserRule rule = rules[action.second];
+            for (int i = 0; i < rule.second; i++)
+            {
+                stack.pop_back();
+            }
+            stack.push_back({table.at({state, rule.first}).second, rule.first});
+            break;
+        case AcceptStackAction:
+            break;
+        }
+        action = table.at({state, token_type_to_node_type(it->type)});
+    }
+}
 
+NodeType token_type_to_node_type(const TokenType token_type)
+{
+    return static_cast<NodeType>(token_type);
 }
 
 BasicVariantType node_to_basic_variant_type(const Node &node)
@@ -52,7 +83,7 @@ bool prase_const_declaration(SymbolTable &table, const Node &const_declaration)
     else
     {
         prase_const_declaration(table, *const_declaration.children[0]);
-        Node &const_declaration = *(const_declaration.children[2]);
+        prase_const_declaration_children(table, *(const_declaration.children[2]));
     }
 }
 
@@ -69,16 +100,16 @@ pair<int, int> make_range_from_period_children(const NodeList::iterator &it)
     return {stoi(it->string_value), stoi((it + 2)->string_value)};
 }
 
-ArrayRange make_array_range(const Node &period_node)
+ArrayRange prase_period(const Node &period)
 {
-    if (period_node.children.size() == 3)
+    if (period.children.size() == 3)
     {
-        return {make_range_from_period_children(period_node.children.begin())};
+        return {make_range_from_period_children(period.children.begin())};
     }
     else
     {
-        ArrayRange left_range = make_array_range(*period_node.children[0]);
-        pair<int, int> right_range = make_range_from_period_children(period_node.children.begin() + 2);
+        ArrayRange left_range = prase_period(*period.children[0]);
+        pair<int, int> right_range = make_range_from_period_children(period.children.begin() + 2);
         left_range.push_back(right_range);
         return left_range;
     }
@@ -94,7 +125,7 @@ VariantType prase_variant_type_from_type(const Node &type_node)
     else
     {
         // array
-        ArrayRange range = make_array_range(*type_node.children[2]);
+        ArrayRange range = prase_period(*type_node.children[2]);
         return VariantType(node_to_basic_variant_type(*type_node.children[5]), false, new ArrayRange(range));
     }
 }
@@ -123,7 +154,7 @@ bool prase_var_declaration_children(SymbolTable &table, const NodeList::iterator
     }
 }
 
-bool prase_var_declaration(SymbolTable &table, Node &var_declaration)
+bool prase_var_declaration(SymbolTable &table, const Node &var_declaration)
 {
     if (var_declaration.children.size() == 3)
     {
@@ -132,11 +163,11 @@ bool prase_var_declaration(SymbolTable &table, Node &var_declaration)
     else
     {
         prase_var_declaration(table, *var_declaration.children[0]);
-        Node &var_declaration = *(var_declaration.children[2]);
+        prase_var_declaration_children(table, *(var_declaration.children[2]));
     }
 }
 
-bool prase_var_declarations(SymbolTable &program_table, Node &var_declarations)
+bool prase_var_declarations(SymbolTable &program_table, const Node &var_declarations)
 {
     if (var_declarations.children.size() > 1)
     {
@@ -144,19 +175,94 @@ bool prase_var_declarations(SymbolTable &program_table, Node &var_declarations)
     }
 }
 
-SimpleParameterTypeList prase_value_parameter(Node &value_parameter)
+SimpleParameterTypeList prase_value_parameter(const Node &value_parameter)
 {
     return {prase_id_list_from_idlist(*value_parameter.children[0]), prase_variant_type_from_type(*value_parameter.children[2])};
 }
 
-SimpleParameterTypeList prase_parameter(Node &parameter)
+ParameterTypeList prase_parameter(const Node &parameter)
 {
     Node &child_node = *parameter.children[0];
+    bool is_reference;
+    SimpleParameterTypeList parameters({}, EmptyVariant);
+    ParameterTypeList same_type_list;
     if (child_node.children.size() == 2)
     {
         // 传引用
+        parameters = prase_value_parameter(*parameter.children[1]);
+        is_reference = true;
     }
-    
+    else
+    {
+        parameters = prase_value_parameter(child_node);
+        is_reference = false;
+    }
+    for (const string &name : parameters.first)
+    {
+        same_type_list.push_back({name, ParameterType(parameters.second)});
+    }
+    return same_type_list;
+}
+
+ParameterTypeList prase_parameter_list(const Node &parameter_list)
+{
+    if (parameter_list.children.size() == 1)
+    {
+        // 仅一类参数
+        return prase_parameter(*parameter_list.children[0]);
+    }
+    else
+    {
+        ParameterTypeList left_list = prase_parameter_list(*parameter_list.children[0]);
+        ParameterTypeList right_list = prase_parameter(*parameter_list.children[2]);
+        left_list.insert(left_list.end(), right_list.begin(), right_list.end());
+        return left_list;
+    }
+}
+
+ParameterTypeList prase_formal_parameter(const Node &formal_parameter)
+{
+    if (formal_parameter.children.size == 3)
+    {
+        return prase_parameter_list(*formal_parameter.children[1]);
+    }
+    else
+    {
+        return {};
+    }
+}
+
+bool prase_statement(SymbolTable &table, Node &statement)
+{
+    if (statement.children[0]->type == ForNode)
+    {
+        SymbolTable *sub_table = new SymbolTable(&table); // 子符号表
+        statement.info->table = sub_table;
+        sub_table->insert(statement.children[1]->string_value, *new Symbol(new VariantType(IntVariant)));
+        prase_statement(*sub_table, *statement.children[7]);
+    }
+}
+
+bool prase_statement_list(SymbolTable &table, Node &statement_list)
+{
+    if (statement_list.children.size() == 3)
+    {
+        prase_statement_list(table, *statement_list.children[0]);
+        prase_statement(table, *statement_list.children[2]);
+    }
+    prase_statement(table, *statement_list.children[0]);
+}
+
+bool prase_compound_statement(SymbolTable &table, Node &subprogram_body)
+{
+    prase_statement_list(table, *subprogram_body.children[1]);
+}
+
+bool prase_subprogram_body(SymbolTable &table, Node &subprogram_body)
+{
+    prase_const_declarations(table, *subprogram_body.children[0]);
+    prase_var_declarations(table, *subprogram_body.children[1]);
+    prase_compound_statement(table, *subprogram_body.children[2]);
 }
 
 bool prase_subprogram_declaration(SymbolTable &table, Node &subprogram_declaration)
@@ -165,17 +271,16 @@ bool prase_subprogram_declaration(SymbolTable &table, Node &subprogram_declarati
     Node &subprogram_head = *subprogram_declaration.children[0];
     Node &subprogram_body = *subprogram_declaration.children[2];
     Symbol &source_symbol = table.find(subprogram_head.children[1]->string_value); // 上级符号表中的符号
-    SymbolTable *sub_table = new SymbolTable(&table, &source_symbol); // 子符号表
-    if (var_declaration.children.size() == 3)
+    subprogram_declaration.info->table = new SymbolTable(&table, &source_symbol); // 子符号表
+    source_symbol.parameters = new ParameterTypeList(prase_formal_parameter(*subprogram_head.children[2]));
+    if (subprogram_head.children.size() == 4)
     {
-        prase_var_declaration_children(table, var_declaration.children.begin());
+        // 为函数，有返回值
+        source_symbol.type = new VariantType(prase_variant_type_from_type(*subprogram_head.children[4]));
     }
-    else
-    {
-        prase_var_declaration(table, *var_declaration.children[0]);
-        Node &var_declaration = *(var_declaration.children[2]);
-    }
+    prase_subprogram_body(*subprogram_declaration.info->table, subprogram_body);
 }
+
 bool prase_subprogram_declarations(SymbolTable &program_table, Node &subprogram_declarations)
 {
     if (subprogram_declarations.children.size() > 1)
@@ -192,9 +297,4 @@ bool prase_program(SymbolTable &program_table, Node &program_node)
     Node &compound_statement = *(program_body.children[3]);
     prase_const_declarations(program_table, *(program_body.children[0]));
     prase_var_declarations(program_table, *(program_body.children[1]));
-}
-
-// 若无错误，返回true，否则返回false
-bool prase_function(SymbolTable &root_table, Node &root_node)
-{
 }
