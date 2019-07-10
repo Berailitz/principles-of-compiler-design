@@ -92,7 +92,6 @@ class Token
     string string_value = ""; // 标识符的ID（名字），int、float、boolean、char的值
     int line = -1; // 行号、
     int column = -1; // 列号
-    Token();
     Token(const string &string_value, const int line = -1, const int column = -1);
     Token(const string text, const string flag);
     operator string() const;
