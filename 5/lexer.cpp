@@ -11,7 +11,7 @@ using namespace std;
 #define keyWord_length 20
 
 
-enum TokenType
+enum TokenType														//记号枚举类 
 {
     EmptyToken, // 空类型
     ProgramToken, // 程序记号
@@ -74,14 +74,14 @@ enum OpIndex
     AndOp
 };
 
-typedef struct _Buffer{
+typedef struct _Buffer{																// 输入缓冲区的结构体 
 	int check = 0;
 	char standing;	
 	int lines = 0;
 	int columns = 0;								 
 }Buffer;
 
-int string2int(string str){
+int string2int(string str){															//字符串转换为整型 
     stringstream ss;
     ss << str;
     int result;
@@ -98,12 +98,13 @@ class Token
     int line; 																		// 行号
     int column; 																	// 列号
     Token();
-    Token(const string &string_value, const int line = -1, const int column = -1){//printf("%s\n",string_value.c_str());
+    Token(const string &string_value, const int line = -1, const int column = -1){	//传入string_value的构造函数 
     	this->line = line;
     	this->column = column;
     	this->string_value.assign(string_value);
     	int k = 0;
-    	if(string_value=="program"){
+		//cout<<string_value<<endl;
+    	if(string_value=="program"){												//判断不同类型的string_value 
     		type = ProgramToken;
 		}
 		else if(string_value=="("){
@@ -161,6 +162,10 @@ class Token
 		}
 		else if(string_value=="end"){
 			type = EndToken;
+		}
+		else if(string_value.find("..")!= string::npos){
+			type = ArrayRangeDelimiterToken;
+			this->string_value.assign(this->string_value.substr(1,this->string_value.length()-1));
 		}
 		else if(string_value=="-"){
 			type = MinusToken;
@@ -265,10 +270,10 @@ class Token
 		else if(string_value.find(".")!= string::npos){
 			type = RealToken;
 		}
-		else if(string_value.find("?")!= string::npos){
+		/*else if(string_value.find("?")!= string::npos){
 			type = ArrayRangeDelimiterToken;
 			this->string_value.assign(string_value.substr(1, string_value.length()-1));	
-		}
+		}*/
 		else if(string_value=="0"){
 			type = IntToken;			
 		}
@@ -280,7 +285,7 @@ class Token
 		}
 		return; 
 	};
-    Token(const string text,string flag){
+    Token(const string text,string flag){											
     	string s;
     	s.assign(text);
     	int p;
@@ -297,7 +302,7 @@ class Token
     	column =string2int(s); //stoi(s.substr(p+1,s.length()),0,10);
     	return;
 	};
-    operator string() const{
+    operator string() const{																		//把Token转换为string 
 		string token_text = to_string(type) + TOKEN_TEXT_DELIMITER + string_value;
 		return token_text + TOKEN_TEXT_DELIMITER + to_string(line) + TOKEN_TEXT_DELIMITER + to_string(column);
 	};
@@ -329,13 +334,11 @@ void Lexer( FILE *fp);
 
 int lines = 1;
 int length = 0;
-map<string,string> Keywords;
 vector<Token> tokenList;    
 vector<Error> errorList;  
+FILE *fp;   									// 测试文件指针 
 
 int main(void){
-	FILE *fp;   									// 测试文件指针 
-	
 	
     if((fp=fopen("test.txt","r"))==NULL)
     {
@@ -349,51 +352,23 @@ int main(void){
     for(int i=0;i<tokenList.size();i++){
     	//printf("%d\n",tokenList[i].type+3);
     	cout<<string(tokenList[i])<<endl;
-    	string k;
+    	/*string k;
 		k.assign(string(tokenList[i]));
     	Token s(k,string("123"));
-    	// cout<<string(s)<<endl;
-    	cout<<endl;
+    	cout<<string(s)<<endl;
+    	cout<<endl;*/
 	}
 	
+	printf("错误列表如下：\n");
 	for(int j=0;j<errorList.size();j++){
 		cout<<errorList[j].what()<<endl;
+	}
+	if(errorList.size()==0){
+		printf("没有错误！"); 
 	}
     fclose(fp);
     return 0;
 } 
-
-void Initkey(void){
-	FILE* fp = fopen("keyword.txt","r");
-	
-	if(fp==NULL){
-		printf("文件打开错误！");
-		return ; 
-	}
-	
-	char ch = getc(fp);
-	while(ch!=-1){
-		string key = "";
-		string value = "";
-		while(ch!=':'){
-			key = key + ch;
-			ch = getc(fp);
-		}
-		
-		ch = getc(fp);
-		while(ch!=10&&ch!=-1){
-			value = value + ch;
-			ch = getc(fp);
-			int c = (int)ch;
-			//printf(" **%d** \n",c);
-		}
-		Keywords[key].assign(value);
-		//printf("%s:%s\n",key.c_str(),value.c_str());
-		ch = getc(fp);
-	}
-	
-	fclose(fp);
-}
 
 void Initbuffer(FILE* fp, Buffer* buffer,int &model){
 	//初始输入缓冲区
@@ -484,7 +459,7 @@ void Initbuffer(FILE* fp, Buffer* buffer,int &model){
 				}
 			}
 			if(ch==EOF){											//无"}"匹配 			//error 
-				Error temp_error("Expected }",lines,length);
+				Error temp_error("[Expected }.]",lines,length);
 				errorList.push_back(temp_error);
 				fseek(fp,temp,0);
 				lines = temp_lines;
@@ -572,8 +547,6 @@ void exchange_error(string v, int c_line, int c_length){
 }
 
 void Lexer( FILE *fp){
-	Initkey(); 
-	
 	Buffer buffer[Buffer_size];
 	int model = 0;
 	int forward = 0;
@@ -673,6 +646,9 @@ void Lexer( FILE *fp){
 					case ';': state = 3;break;
 					case '.': state = 3;break;
 					case '-': state = 3;break;
+					case '+': state = 3;break;
+					case '*': state = 3;break;
+					case '/': state = 3;break;
 					case '[': state = 3;break;
 					case ']': state = 3;break;
 					case '=': state = 3;break; 
@@ -686,7 +662,7 @@ void Lexer( FILE *fp){
 							  v.assign("");
 							  break;
 				 	default: state = 0;
-				 			 exchange_error("No such character.",x,y);
+				 			 exchange_error("[No such character.]",x,y);
 					 		 break;  
 				}
 				break;
@@ -783,6 +759,18 @@ void Lexer( FILE *fp){
 					 		  exchange(v,_C_line,_C_length);
 							  v.assign("");
 							  break;
+					case '+': state = 3;
+					 		  exchange(v,_C_line,_C_length);
+							  v.assign("");
+							  break;
+					case '*': state = 3;
+					 		  exchange(v,_C_line,_C_length);
+							  v.assign("");
+							  break;
+					case '/': state = 3;
+					 		  exchange(v,_C_line,_C_length);
+							  v.assign("");
+							  break;
 					case '[': state = 3;
 					 		  exchange(v,_C_line,_C_length);
 							  v.assign("");
@@ -813,10 +801,10 @@ void Lexer( FILE *fp){
 							  _C_line = x;
 							  _C_length = y;
 							  break;
-				 	default: state = 0;exchange_error("Identifier error.",x,y);break;  										//error
+				 	default: state = 0;printf("%c",C);exchange_error("[Identifier error.]",x,y);break;  										//error
 				}
 				break;
-			case 2:
+			case 2:																											//数字 
 				v = v + C;
 				_C_line = x;
 				_C_length = y;
@@ -836,7 +824,7 @@ void Lexer( FILE *fp){
 							  _C_line = x;
 							  _C_length = y;
 							  C = get_char( fp, buffer,model,forward,x,y);
-				 			  if(C>='0'&&C<='9'){
+				 			  if(C>='0'&&C<='9'||C=='.'){
 				 			  	  v = v+'.';
 				 			  	  state = 5;
 							   }
@@ -871,15 +859,23 @@ void Lexer( FILE *fp){
 					 		  exchange(v,_C_line,_C_length);
 							  v.assign("");
 							  break;
+					case '+': state = 3;
+					 		  exchange(v,_C_line,_C_length);
+							  v.assign("");
+							  break;
+					case '*': state = 3;
+					 		  exchange(v,_C_line,_C_length);
+							  v.assign("");
+							  break;
+					case '/': state = 3;
+					 		  exchange(v,_C_line,_C_length);
+							  v.assign("");
+							  break;							  
 					case '[': state = 3;
 					 		  exchange(v,_C_line,_C_length);
 							  v.assign("");
 							  break;
 					case ']': state = 3;
-							  is_array = tokenList.size();
-							  if(tokenList[is_array-2].string_value == "["){
-							  	v = v + "?";
-							  }
 					 		  exchange(v,_C_line,_C_length);
 							  v.assign("");
 							  break;
@@ -903,10 +899,10 @@ void Lexer( FILE *fp){
 					 		  exchange(v,_C_line,_C_length);
 							  v.assign("");
 							  break;
-				 	default: state = 0;exchange_error("int error.",x,y);break;  
+				 	default: state = 0;exchange_error("[Int error.]",x,y);break;  
 				}
 				break;
-			case 3:
+			case 3:																										//检测特殊符号 
 				v = v + C;
 				is_const = tokenList.size();
 				if(tokenList[is_const-2].string_value == "const"&&C=='='){
@@ -919,11 +915,8 @@ void Lexer( FILE *fp){
 				_C_length = y;
 				C = get_char( fp, buffer,model,forward, x, y);
 				v.assign("");
-				if(_C=='['&&C>='0'&&C<='9'){
-					v.assign("?");
-				}
 				break;
-			case 4:
+			case 4:																										//检测:= <> <= >= 
 				v = v + C;
 				_C_line = x;
 				_C_length = y;
@@ -993,6 +986,18 @@ void Lexer( FILE *fp){
 					 		  	  exchange(v,_C_line,_C_length);
 								  v.assign("");
 								  break;
+						case '+': state = 3;
+					 		  	  exchange(v,_C_line,_C_length);
+								  v.assign("");
+								  break;
+						case '*': state = 3;
+					 		  	  exchange(v,_C_line,_C_length);
+								  v.assign("");
+								  break;
+						case '/': state = 3;
+					 		  	  exchange(v,_C_line,_C_length);
+								  v.assign("");
+								  break;
 						case '-': state = 3;
 					 		  	  exchange(v,_C_line,_C_length);
 								  v.assign("");
@@ -1040,11 +1045,11 @@ void Lexer( FILE *fp){
 								  C = get_char( fp, buffer,model,forward, x, y);
 								  v.assign("");
 								  break;
-					 	default: state = 0;exchange_error("Operator error.",x,y);break;  										//error
+					 	default: state = 0;exchange_error("[Operator error.]",x,y);break;  										//error
 					}									
 				}
 				break;
-			case 5:
+			case 5:																												//检测小数点后的部分 
 				v = v + C;
 				_C_line = x;
 				_C_length = y;
@@ -1079,6 +1084,18 @@ void Lexer( FILE *fp){
 					 		 	  exchange(v,_C_line,_C_length);
 								  v.assign("");
 								  break;
+						case '+': state = 3;
+					 		 	  exchange(v,_C_line,_C_length);
+								  v.assign("");
+								  break;
+						case '*': state = 3;
+					 		 	  exchange(v,_C_line,_C_length);
+								  v.assign("");
+								  break;
+						case '/': state = 3;
+					 		 	  exchange(v,_C_line,_C_length);
+								  v.assign("");
+								  break;
 						case '[': state = 3;
 					 		  	  exchange(v,_C_line,_C_length);
 								  v.assign("");
@@ -1110,7 +1127,7 @@ void Lexer( FILE *fp){
 								  C = get_char( fp, buffer,model,forward, x, y);
 								  v.assign("");
 								  break;
-					 	default: state = 0;exchange_error("float error.",x,y);break;  										//error
+					 	default: state = 0;exchange_error("[Float error.]",x,y);break;  										//error
 					}									
 				}
 				break;				
