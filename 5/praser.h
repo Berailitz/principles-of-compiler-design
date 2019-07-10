@@ -27,8 +27,8 @@ class Praser
     PraserActionTable &table = *new PraserActionTable;
     PraserRuleList &rules = *new PraserRuleList;
     Praser();
-    void prase(const TokenList &tokens) const;
-    void build_table();
+    Node *prase(const TokenList &tokens) const;
+    void build_table_and_rules();
 };
 
 #endif

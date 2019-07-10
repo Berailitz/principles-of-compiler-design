@@ -1,10 +1,11 @@
 #include "praser.h"
 
-void Praser::prase(const TokenList &tokens) const
+Node *Praser::prase(const TokenList &tokens) const
 {
     TokenList::const_iterator it = tokens.begin();
     PraserState state = 0;
-    PraserStack stack;
+    PraserStack &stack = *new PraserStack;
+    NodeList &nodes = *new NodeList;
     PraserAction action = table.at({state, token_type_to_node_type(it->type)});
     while (action.first != AcceptStackAction)
     {
@@ -14,21 +15,26 @@ void Praser::prase(const TokenList &tokens) const
             break;
         case ShiftStackAction:
             stack.push_back({action.second, token_type_to_node_type(it->type)});
+            nodes.push_back(new Node(*it));
             it++;
             break;
         case ReduceStackAction:
             PraserRule rule = rules[action.second];
+            Node *parent = new Node(rule.first);
+            parent->children = move(nodes);
             for (int i = 0; i < rule.second; i++)
             {
                 stack.pop_back();
             }
             stack.push_back({table.at({state, rule.first}).second, rule.first});
+            nodes.push_back(parent);
             break;
         case AcceptStackAction:
             break;
         }
         action = table.at({state, token_type_to_node_type(it->type)});
     }
+    return nodes[0];
 }
 
 NodeType token_type_to_node_type(const TokenType token_type)
