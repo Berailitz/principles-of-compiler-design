@@ -124,6 +124,7 @@ class ParameterType : public VariantType
 {
 public:
     bool is_referfence = false; // 记录是否为传引用
+    ParameterType(const VariantType &old_variantType, const bool is_referfence = false);
 };
 
 using IDList = vector<string>;
